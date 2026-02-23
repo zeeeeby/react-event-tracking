@@ -19,32 +19,32 @@ yarn add react-event-tracking
 
 1. Define the root handler (e.g., send to GTM or API)
 ```tsx
-import { AnalyticsRoot } from 'react-event-tracking';
+import { TrackRoot } from 'react-event-tracking';
 
 const Main = () => (
-  <AnalyticsRoot onEvent={(name, params) => gtag('event', name, params)}>
+  <TrackRoot onEvent={(name, params) => gtag('event', name, params)}>
     <App/>
-  </AnalyticsRoot>
+  </TrackRoot>
 );
 ``` 
 2. Wrap any component with shared parameters
 ```tsx
-import { AnalyticsProvider } from 'react-event-tracking';
+import { TrackProvider } from 'react-event-tracking';
 
 const Dashboard = () => (
-  <AnalyticsProvider params={{ screen: 'dashboard' }}>
+  <TrackProvider params={{ screen: 'dashboard' }}>
     <DashboardView/>
-  </AnalyticsProvider>
+  </TrackProvider>
 );
 ```
 
 3. Send events conveniently. On button click, parameters will be merged.
 
 ```tsx
-import { useAnalytics } from 'react-event-tracking';
+import { useTracker } from 'react-event-tracking';
 
 const MyButton = () => {
-  const { sendEvent } = useAnalytics();
+  const { sendEvent } = useTracker();
 
   return (
     // event sent with parameters: { screen: 'dashboard', button_id: '123' }
@@ -61,7 +61,7 @@ const MyButton = () => {
 
 ```tsx
 export function PageView(props) {
-    const { sendEvent } = useAnalytics();
+    const { sendEvent } = useTracker();
 
     useEffect(() => {
         sendEvent('page_view');

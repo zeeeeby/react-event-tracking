@@ -1,7 +1,9 @@
 {
   "name": "react-event-tracking",
-  "version": "1.0.0",
-  "main": "index.js",
+  "version": "1.0.2",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { AnalyticsRoot, AnalyticsProvider, useAnalytics } from "../src/context"
+import { TrackRoot, TrackProvider, useTracker } from "../src"
 
 const TestButton = ({
 	eventName,
@@ -13,22 +13,22 @@ const TestButton = ({
 	params?: Record<string, any>
 	label?: string
 }) => {
-	const { sendEvent } = useAnalytics()
+	const { sendEvent } = useTracker()
 	return <button onClick={() => sendEvent(eventName, params)}>{label}</button>
 }
 
-describe("Analytics Context", () => {
+describe("Track Context", () => {
 	it("should send event from root", async () => {
 		const onEvent = vi.fn()
 
 		render(
-			<AnalyticsRoot onEvent={onEvent}>
+			<TrackRoot onEvent={onEvent}>
 				<TestButton
 					eventName="test_click"
 					params={{ foo: "bar" }}
 					label="Root Click"
 				/>
-			</AnalyticsRoot>
+			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Root Click"))
@@ -41,17 +41,17 @@ describe("Analytics Context", () => {
 		const onEvent = vi.fn()
 
 		render(
-			<AnalyticsRoot onEvent={onEvent}>
-				<AnalyticsProvider params={{ section: "header" }}>
-					<AnalyticsProvider params={{ item: "logo" }}>
+			<TrackRoot onEvent={onEvent}>
+				<TrackProvider params={{ section: "header" }}>
+					<TrackProvider params={{ item: "logo" }}>
 						<TestButton
 							eventName="logo_click"
 							params={{ action: "click" }}
 							label="Nested Click"
 						/>
-					</AnalyticsProvider>
-				</AnalyticsProvider>
-			</AnalyticsRoot>
+					</TrackProvider>
+				</TrackProvider>
+			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Nested Click"))
@@ -67,18 +67,18 @@ describe("Analytics Context", () => {
 		const onEvent = vi.fn()
 
 		render(
-			<AnalyticsRoot onEvent={onEvent}>
-				<AnalyticsProvider params={{ page: "home", id: 1 }}>
+			<TrackRoot onEvent={onEvent}>
+				<TrackProvider params={{ page: "home", id: 1 }}>
 					{/* Переопределяем id */}
-					<AnalyticsProvider params={{ id: 2 }}>
+					<TrackProvider params={{ id: 2 }}>
 						<TestButton
 							eventName="click"
 							params={{ id: 3 }}
 							label="Override Click"
 						/>
-					</AnalyticsProvider>
-				</AnalyticsProvider>
-			</AnalyticsRoot>
+					</TrackProvider>
+				</TrackProvider>
+			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Override Click"))
@@ -93,24 +93,24 @@ describe("Analytics Context", () => {
 		const onEvent = vi.fn()
 
 		const Wrapper = ({ count }: { count: number }) => (
-			<AnalyticsProvider params={{ count }}>
+			<TrackProvider params={{ count }}>
 				<TestButton eventName="count_click" label="Rerender Click" />
-			</AnalyticsProvider>
+			</TrackProvider>
 		)
 
 		const { rerender } = render(
-			<AnalyticsRoot onEvent={onEvent}>
+			<TrackRoot onEvent={onEvent}>
 				<Wrapper count={1} />
-			</AnalyticsRoot>
+			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Rerender Click"))
 		expect(onEvent).toHaveBeenLastCalledWith("count_click", { count: 1 })
 
 		rerender(
-			<AnalyticsRoot onEvent={onEvent}>
+			<TrackRoot onEvent={onEvent}>
 				<Wrapper count={2} />
-			</AnalyticsRoot>
+			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Rerender Click"))
@@ -121,7 +121,7 @@ describe("Analytics Context", () => {
 		const renderFn = vi.fn()
 
 		const MemoChild = React.memo(() => {
-			useAnalytics()
+			useTracker()
 			renderFn()
 			return <div>Memo Child</div>
 		})
@@ -130,32 +130,32 @@ describe("Analytics Context", () => {
 		MemoChild.displayName = "MemoChild"
 
 		const { rerender } = render(
-			<AnalyticsRoot onEvent={() => {}}>
-				<AnalyticsProvider params={{ val: 1 }}>
+			<TrackRoot onEvent={() => {}}>
+				<TrackProvider params={{ val: 1 }}>
 					<MemoChild />
-				</AnalyticsProvider>
-			</AnalyticsRoot>
+				</TrackProvider>
+			</TrackRoot>
 		)
 
 		expect(renderFn).toHaveBeenCalledTimes(1)
 
 		rerender(
-			<AnalyticsRoot onEvent={() => {}}>
-				<AnalyticsProvider params={{ val: 2 }}>
+			<TrackRoot onEvent={() => {}}>
+				<TrackProvider params={{ val: 2 }}>
 					<MemoChild />
-				</AnalyticsProvider>
-			</AnalyticsRoot>
+				</TrackProvider>
+			</TrackRoot>
 		)
 
 		expect(renderFn).toHaveBeenCalledTimes(1)
 	})
 
-	it("should throw error if used outside of AnalyticsRoot", () => {
+	it("should throw error if used outside of TrackRoot", () => {
 		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
 		expect(() => {
 			render(<TestButton eventName="fail" label="Fail Click" />)
-		}).toThrow("useAnalytics must be used within AnalyticsRoot")
+		}).toThrow("useTracker must be used within TrackRoot")
 
 		consoleSpy.mockRestore()
 	})
