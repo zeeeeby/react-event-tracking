@@ -41,7 +41,7 @@ export const AnalyticsRoot = ({
 	return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>
 }
 
-export const AnalyticsContextProvider = ({
+export const AnalyticsProvider = ({
 	params,
 	children
 }: PropsWithChildren<{

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { AnalyticsRoot, AnalyticsContextProvider, useAnalytics } from "../src/context"
+import { AnalyticsRoot, AnalyticsProvider, useAnalytics } from "../src/context"
 
 const TestButton = ({
 	eventName,
@@ -42,15 +42,15 @@ describe("Analytics Context", () => {
 
 		render(
 			<AnalyticsRoot onEvent={onEvent}>
-				<AnalyticsContextProvider params={{ section: "header" }}>
-					<AnalyticsContextProvider params={{ item: "logo" }}>
+				<AnalyticsProvider params={{ section: "header" }}>
+					<AnalyticsProvider params={{ item: "logo" }}>
 						<TestButton
 							eventName="logo_click"
 							params={{ action: "click" }}
 							label="Nested Click"
 						/>
-					</AnalyticsContextProvider>
-				</AnalyticsContextProvider>
+					</AnalyticsProvider>
+				</AnalyticsProvider>
 			</AnalyticsRoot>
 		)
 
@@ -68,16 +68,16 @@ describe("Analytics Context", () => {
 
 		render(
 			<AnalyticsRoot onEvent={onEvent}>
-				<AnalyticsContextProvider params={{ page: "home", id: 1 }}>
+				<AnalyticsProvider params={{ page: "home", id: 1 }}>
 					{/* Переопределяем id */}
-					<AnalyticsContextProvider params={{ id: 2 }}>
+					<AnalyticsProvider params={{ id: 2 }}>
 						<TestButton
 							eventName="click"
 							params={{ id: 3 }}
 							label="Override Click"
 						/>
-					</AnalyticsContextProvider>
-				</AnalyticsContextProvider>
+					</AnalyticsProvider>
+				</AnalyticsProvider>
 			</AnalyticsRoot>
 		)
 
@@ -93,9 +93,9 @@ describe("Analytics Context", () => {
 		const onEvent = vi.fn()
 
 		const Wrapper = ({ count }: { count: number }) => (
-			<AnalyticsContextProvider params={{ count }}>
+			<AnalyticsProvider params={{ count }}>
 				<TestButton eventName="count_click" label="Rerender Click" />
-			</AnalyticsContextProvider>
+			</AnalyticsProvider>
 		)
 
 		const { rerender } = render(
@@ -131,9 +131,9 @@ describe("Analytics Context", () => {
 
 		const { rerender } = render(
 			<AnalyticsRoot onEvent={() => {}}>
-				<AnalyticsContextProvider params={{ val: 1 }}>
+				<AnalyticsProvider params={{ val: 1 }}>
 					<MemoChild />
-				</AnalyticsContextProvider>
+				</AnalyticsProvider>
 			</AnalyticsRoot>
 		)
 
@@ -141,9 +141,9 @@ describe("Analytics Context", () => {
 
 		rerender(
 			<AnalyticsRoot onEvent={() => {}}>
-				<AnalyticsContextProvider params={{ val: 2 }}>
+				<AnalyticsProvider params={{ val: 2 }}>
 					<MemoChild />
-				</AnalyticsContextProvider>
+				</AnalyticsProvider>
 			</AnalyticsRoot>
 		)
 

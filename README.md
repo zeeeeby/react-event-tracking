@@ -29,12 +29,12 @@ const Main = () => (
 ``` 
 2. Wrap any component with shared parameters
 ```tsx
-import { AnalyticsContextProvider } from 'react-event-tracking';
+import { AnalyticsProvider } from 'react-event-tracking';
 
 const Dashboard = () => (
-  <AnalyticsContextProvider params={{ screen: 'dashboard' }}>
+  <AnalyticsProvider params={{ screen: 'dashboard' }}>
     <DashboardView/>
-  </AnalyticsContextProvider>
+  </AnalyticsProvider>
 );
 ```
 
