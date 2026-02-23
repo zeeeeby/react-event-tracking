@@ -56,7 +56,7 @@ const MyButton = () => {
 };
 ```
 
-## Example
+## Examples
 
 ### Page View
 
