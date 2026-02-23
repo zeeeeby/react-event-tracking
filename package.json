@@ -14,7 +14,8 @@
   },
   "scripts": {
     "build": "tsc --noEmit && unbuild",
-    "test": "vitest"
+    "test": "vitest",
+    "toc": "npx markdown-toc README.md -i"
   },
   "author": "",
   "license": "ISC",
