@@ -18,7 +18,7 @@ yarn add react-event-tracking
 
 ## Quickstart
 
-1. Define the root handler (e.g., send to GTM or API)
+1. Define the root handler (e.g., send to GTM, Amplitude or API)
 ```tsx
 import { TrackRoot } from 'react-event-tracking';
 
