@@ -1,9 +1,10 @@
 {
   "name": "react-event-tracking",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "files": [
     "dist"
   ],
+  "repository": "git@github.com:zeeeeby/react-event-tracking.git",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

@@ -5,12 +5,7 @@ import React, {
 	useRef,
 	type PropsWithChildren
 } from "react"
-
-type EventParams = Record<string, any>
-
-interface TrackContextValue {
-	sendEvent: (eventName: string, params?: EventParams) => void
-}
+import { EventParams, TrackContextValue } from "./types"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
