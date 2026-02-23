@@ -60,6 +60,8 @@ const MyButton = () => {
 
 ### Page View
 
+Tracks a page view event when the component mounts.
+
 ```tsx
 export function PageView(props: PropsWithChildren<{ name: string }>) {
     const { sendEvent } = useTracker();
