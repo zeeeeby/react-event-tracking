@@ -56,22 +56,18 @@ const MyButton = () => {
 };
 ```
 
-## Examples
+## Built-in Hooks   
 
-### Page View
+### useMountEvent   
 
-Tracks a page view event when the component mounts.
+Sends an event when the component mounts.
 
 ```tsx
-export function usePageView(screenName: string) {
-    const { sendEvent } = useTracker();
-
-    useEffect(() => {
-        sendEvent('page_view', { screen: screenName });
-    }, []);
-}
+import { useMountEvent } from 'react-event-tracking';
 
 export function DashboardScreen(props) {
-    usePageView("dashboard")
+    useMountEvent('page_view', { screen: 'dashboard' });
+
+    return <div>Dashboard</div>;
 }
 ```
