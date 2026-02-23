@@ -10,7 +10,7 @@ A convenient React context for tracking analytics events.
 ## Installation
 
 ```
-npm install treact-event-tracking
+npm install react-event-tracking
 ```
 ```
 yarn add react-event-tracking
