@@ -1,4 +1,5 @@
-A convenient React context for tracking analytics events.
+# react-event-tracking [![NPM Version](https://img.shields.io/npm/v/react-event-tracking)](https://www.npmjs.com/package/react-event-tracking)
+A convenient React context for tracking analytics events. 
 
 ## Features
 
