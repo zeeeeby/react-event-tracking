@@ -61,11 +61,11 @@ const MyButton = () => {
 ### Page View
 
 ```tsx
-export function PageView(props) {
+export function PageView(props: PropsWithChildren<{ name: string }>) {
     const { sendEvent } = useTracker();
 
     useEffect(() => {
-        sendEvent('page_view');
+        sendEvent('page_view', { screen: props.name });
     }, []);
 
     return <>{props.children}</>
