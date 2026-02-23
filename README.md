@@ -8,17 +8,12 @@ A convenient React context for tracking analytics events.
 
 ## Installation
 
-::: code-group
-
-```sh [npm]
+```
 npm install treact-event-tracking
 ```
-
-```sh [yarn]
+```
 yarn add react-event-tracking
 ```
-
-:::
 
 ## Quickstart
 
