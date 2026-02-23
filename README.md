@@ -63,13 +63,15 @@ const MyButton = () => {
 Tracks a page view event when the component mounts.
 
 ```tsx
-export function PageView(props: PropsWithChildren<{ name: string }>) {
+export function usePageView(screenName: string) {
     const { sendEvent } = useTracker();
 
     useEffect(() => {
-        sendEvent('page_view', { screen: props.name });
+        sendEvent('page_view', { screen: screenName });
     }, []);
+}
 
-    return <>{props.children}</>
+export function DashboardScreen(props) {
+    usePageView("dashboard")
 }
 ```
