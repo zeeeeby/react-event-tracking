@@ -1,11 +1,12 @@
 import React, {
 	useCallback,
 	useContext,
+	useEffect,
 	useMemo,
 	useRef,
 	type PropsWithChildren
 } from "react"
-import { EventParams, TrackContextValue } from "./types"
+import { EventParams, TrackContextValue, EventFilter } from "./types"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
@@ -18,29 +19,47 @@ export const useTracker = () => {
 	return ctx
 }
 
-export const TrackRoot = ({
-	onEvent,
-	children,
-	initialParams
-}: PropsWithChildren<{
+type TrackRootProps = PropsWithChildren<{
 	onEvent: (eventName: string, params?: EventParams) => void
-	initialParams?: EventParams
-}>) => {
-	const onEventRef = useRef(onEvent)
-	onEventRef.current = onEvent
+	filter?: EventFilter
+}>
 
-	const sendEvent = useCallback((eventName: string, params?: EventParams) => {
-		onEventRef.current(eventName, params)
-	}, [])
+const TrackRootComponent = ({ onEvent, children, filter }: TrackRootProps) => {
+	const parentCtx = useContext(TrackContext)
+
+	const onEventRef = useFreshRef(onEvent)
+	const filterRef = useFreshRef(filter)
+
+	const sendEvent = useCallback(
+		(eventName: string, params?: EventParams) => {
+			const shouldTrack = filterRef.current ? filterRef.current(eventName, params) : true
+
+			if (shouldTrack) {
+				onEventRef.current(eventName, params)
+			}
+
+			if (parentCtx) {
+				parentCtx.sendEvent(eventName, params)
+			}
+		},
+		[parentCtx]
+	)
 
 	const value = useMemo(() => ({ sendEvent }), [sendEvent])
 
-	return (
-		<TrackContext.Provider value={value}>
-			<TrackProvider params={initialParams || {}}>{children}</TrackProvider>
-		</TrackContext.Provider>
+	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
+}
+
+const factory = (
+	onEvent: (eventName: string, params?: EventParams) => void,
+	filter?: EventFilter
+) => {
+	return (props: Omit<TrackRootProps, "onEvent" | "filter">) => (
+		<TrackRootComponent onEvent={onEvent} filter={filter} {...props} />
 	)
 }
+
+export const TrackRoot = Object.assign(TrackRootComponent, { factory })
 
 export const TrackProvider = ({
 	params,
@@ -50,8 +69,7 @@ export const TrackProvider = ({
 }>) => {
 	const ctx = useTracker()
 
-	const paramsRef = useRef(params)
-	paramsRef.current = params
+	const paramsRef = useFreshRef(params)
 
 	const sendEvent = useCallback(
 		(eventName: string, eventParams?: EventParams) => {
@@ -68,4 +86,11 @@ export const TrackProvider = ({
 	const value = useMemo(() => ({ sendEvent }), [sendEvent])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
+}
+
+function useFreshRef<T>(data: T) {
+	const ref = useRef(data)
+	ref.current = data
+
+	return ref
 }

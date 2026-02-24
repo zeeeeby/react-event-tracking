@@ -159,4 +159,34 @@ describe("Track Context", () => {
 
 		consoleSpy.mockRestore()
 	})
+
+	it("should send event from multiple roots", async () => {
+		const onEvent = vi.fn()
+		const onEvent2 = vi.fn()
+
+		render(
+			<TrackRoot onEvent={onEvent}>
+				<TrackProvider
+					params={{
+						ui: "ui"
+					}}
+				>
+					<TrackRoot onEvent={onEvent2}>
+						<TestButton
+							eventName="test_click"
+							params={{ foo: "bar" }}
+							label="Root Click"
+						/>
+					</TrackRoot>
+				</TrackProvider>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Root Click"))
+
+		expect(onEvent).toHaveBeenCalledTimes(1)
+		expect(onEvent).toHaveBeenCalledWith("test_click", { foo: "bar", ui: "ui" })
+		expect(onEvent2).toHaveBeenCalledTimes(1)
+		expect(onEvent2).toHaveBeenCalledWith("test_click", { foo: "bar" })
+	})
 })
