@@ -14,6 +14,7 @@ A convenient React context for tracking analytics events.
 - [Advanced Usage](#advanced-usage)
   * [Multiple Trackers & Factory](#multiple-trackers--factory)
   * [Filtering Events](#filtering-events)
+  * [Transforming Events](#transforming-events)
 - [Best Practices](#best-practices)
 - [Built-in Hooks](#built-in-hooks)
   * [useMountEvent](#usemountevent)
@@ -104,16 +105,52 @@ const App = () => (
 You can control which events are sent to which provider using the `filter` prop (or the second argument in `factory`). If the filter returns `false`, the event is skipped for that tracker but continues to bubble up to others.
 
 ```tsx
-// Only send events "ui_*" to Google
-const GoogleTracker = TrackRoot.factory(
-  (name, params) => gtag('event', name, params), 
-  (name) => name.startsWith('ui_')
+// Google Analytics: only track page_* events
+const TrackRootGoogle = TrackRoot.factory(
+  (name, params) => gtag('event', name, params),
+  (name) => name.startsWith('page_')
 );
 
-// Send all events to Amplitude (filter is optional, defaults to allowing all events)
-const Logger = TrackRoot.factory(
-  amplitude.logEvent,
-  () => true
+// Amplitude: track everything (filter is optional, defaults to allowing all events)
+const TrackRootAmplitude = TrackRoot.factory(
+  (name, params) => ampltitude.logEvent(name, params),
+);
+```
+
+Compose them in your app:
+
+```tsx
+const App = () => (
+  <TrackRootGoogle>
+    <TrackRootAmplitude>
+      <MyApp />
+    </TrackRootAmplitude>
+  </TrackRootGoogle>
+);
+```
+
+### Transforming Events
+
+You can modify the event name or parameters before they reach the handler using the `transform` prop (or the third argument in `factory`). This is useful for normalizing data or mapping events to specific formats required by analytics providers.
+
+Note: Transformations apply locally and do not affect the event bubbling up to parent providers.
+
+```tsx
+// GDPR Tracker
+const AmpltitudeUS = TrackRoot.factory(
+  (name, params) => amplitude.logEvent(name, params),
+  undefined, // no filter
+  (name, params) => {
+    if (params?.userRegion === 'EU') {
+      // Remove PII (Personally Identifiable Information)
+      const { userId, email, ...safeParams } = params || {};
+      return { 
+        eventName: name, 
+        params: safeParams 
+      };
+    }
+    return { eventName: name, params };
+  }
 );
 ```
 
@@ -122,7 +159,10 @@ Or using the component directly:
 ```tsx
 <TrackRoot 
   onEvent={handleEvent} 
-  filter={(name, params) => params?.important === true}
+  transform={(name, params) => ({
+    eventName: name,
+    params: { ...params, timestamp: Date.now() }
+  })}
 >
   <App />
 </TrackRoot>

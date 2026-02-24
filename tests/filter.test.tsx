@@ -13,7 +13,7 @@ describe("TrackRoot filter", () => {
 	it("should filter events based on event name", async () => {
 		const onEvent = vi.fn()
 
-        const filter = (name: string) => name.startsWith("allow")
+		const filter = (name: string) => name.startsWith("allow")
 
 		render(
 			<TrackRoot onEvent={onEvent} filter={filter}>
@@ -37,7 +37,7 @@ describe("TrackRoot filter", () => {
 	it("should filter events based on params", async () => {
 		const onEvent = vi.fn()
 
-        const filter = (_: string, params?: any) => params?.valid === true
+		const filter = (_: string, params?: any) => params?.valid === true
 
 		render(
 			<TrackRoot onEvent={onEvent} filter={filter}>
@@ -74,5 +74,39 @@ describe("TrackRoot filter", () => {
 		expect(onChildEvent).not.toHaveBeenCalled()
 
 		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+	})
+
+	it("should handle errors in filter function gracefully and still bubble", async () => {
+		const onParentEvent = vi.fn()
+		const onChildEvent = vi.fn()
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+		const throwingFilter = () => {
+			throw new Error("Filter failed")
+		}
+
+		render(
+			<TrackRoot onEvent={onParentEvent}>
+				<TrackRoot onEvent={onChildEvent} filter={throwingFilter}>
+					<TestButton eventName="test" />
+				</TrackRoot>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		// Local handler skipped due to error
+		expect(onChildEvent).not.toHaveBeenCalled()
+
+		// Parent handler still called (bubbling preserved)
+		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+
+		// Error logged
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"TrackRoot filter failed:",
+			expect.any(Error)
+		)
+
+		consoleSpy.mockRestore()
 	})
 })

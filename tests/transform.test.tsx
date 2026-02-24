@@ -1,0 +1,156 @@
+import { describe, it, expect, vi } from "vitest"
+import React from "react"
+import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { TrackRoot, useTracker } from "../src"
+
+const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
+	const { sendEvent } = useTracker()
+	return <button onClick={() => sendEvent(eventName, params)}>Click me</button>
+}
+
+describe("TrackRoot transform", () => {
+	it("should transform event name and params", async () => {
+		const onEvent = vi.fn()
+		const transform = (name: string, params?: any) => ({
+			eventName: `prefix_${name}`,
+			params: { ...params, extra: true }
+		})
+
+		render(
+			<TrackRoot onEvent={onEvent} transform={transform}>
+				<TestButton eventName="click" params={{ id: 1 }} />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		expect(onEvent).toHaveBeenCalledWith("prefix_click", { id: 1, extra: true })
+	})
+
+	it("should remove specific properties from params (sanitization)", async () => {
+		const onEvent = vi.fn()
+		const transform = (name: string, params?: any) => {
+			// Remove sensitive data
+			const { password, token, ...safeParams } = params || {}
+			return {
+				eventName: name,
+				params: safeParams
+			}
+		}
+
+		render(
+			<TrackRoot onEvent={onEvent} transform={transform}>
+				<TestButton
+					eventName="submit"
+					params={{ user: "alice", password: "123", token: "xyz", valid: true }}
+				/>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		expect(onEvent).toHaveBeenCalledWith("submit", { user: "alice", valid: true })
+	})
+
+	it("should apply filter AFTER transformation", async () => {
+		const onEvent = vi.fn()
+
+		// Transform: "click" -> "valid_click"
+		const transform = (name: string) => ({
+			eventName: `valid_${name}`
+		})
+
+		// Filter: allows only starting with "valid_"
+		const filter = (name: string) => name.startsWith("valid_")
+
+		render(
+			<TrackRoot onEvent={onEvent} transform={transform} filter={filter}>
+				<TestButton eventName="click" />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		expect(onEvent).toHaveBeenCalledWith("valid_click", undefined)
+	})
+
+	it("should bubble ORIGINAL event to parent (ignoring local transform)", async () => {
+		const onParentEvent = vi.fn()
+		const onChildEvent = vi.fn()
+
+		const transform = (name: string) => ({
+			eventName: `transformed_${name}`
+		})
+
+		render(
+			<TrackRoot onEvent={onParentEvent}>
+				<TrackRoot onEvent={onChildEvent} transform={transform}>
+					<TestButton eventName="original" />
+				</TrackRoot>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		// Child receives transformed event
+		expect(onChildEvent).toHaveBeenCalledWith("transformed_original", undefined)
+
+		// Parent receives original event
+		expect(onParentEvent).toHaveBeenCalledWith("original", undefined)
+	})
+
+	it("should work with factory", async () => {
+		const onEvent = vi.fn()
+
+		const CustomRoot = TrackRoot.factory(
+			onEvent,
+			undefined, // no filter
+			(name, params) => ({ eventName: name.toUpperCase(), params })
+		)
+
+		render(
+			<CustomRoot>
+				<TestButton eventName="test" />
+			</CustomRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		expect(onEvent).toHaveBeenCalledWith("TEST", undefined)
+	})
+
+	it("should handle errors in transform function gracefully and still bubble", async () => {
+		const onParentEvent = vi.fn()
+		const onChildEvent = vi.fn()
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+		const throwingTransform = () => {
+			throw new Error("Transform failed")
+		}
+
+		render(
+			<TrackRoot onEvent={onParentEvent}>
+				<TrackRoot onEvent={onChildEvent} transform={throwingTransform}>
+					<TestButton eventName="test" />
+				</TrackRoot>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		// Local handler skipped due to error in transform
+		expect(onChildEvent).not.toHaveBeenCalled()
+
+		// Parent handler still called (bubbling preserved)
+		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+
+		// Error logged
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"TrackRoot transform failed:",
+			expect.any(Error)
+		)
+
+		consoleSpy.mockRestore()
+	})
+})

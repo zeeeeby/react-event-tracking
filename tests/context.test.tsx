@@ -189,4 +189,31 @@ describe("Track Context", () => {
 		expect(onEvent2).toHaveBeenCalledTimes(1)
 		expect(onEvent2).toHaveBeenCalledWith("test_click", { foo: "bar" })
 	})
+
+	it("should handle error in onEvent gracefully and bubble up", async () => {
+		const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+		const onChildEvent = vi.fn().mockImplementation(() => {
+			throw new Error("Handler failed")
+		})
+		const onParentEvent = vi.fn()
+
+		render(
+			<TrackRoot onEvent={onParentEvent}>
+				<TrackRoot onEvent={onChildEvent}>
+					<TestButton eventName="click" />
+				</TrackRoot>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click me"))
+
+		expect(onChildEvent).toHaveBeenCalled()
+		expect(onParentEvent).toHaveBeenCalledWith("click", undefined)
+		expect(consoleSpy).toHaveBeenCalledWith(
+			"TrackRoot onEvent failed:",
+			expect.any(Error)
+		)
+
+		consoleSpy.mockRestore()
+	})
 })

@@ -1,12 +1,11 @@
 import React, {
 	useCallback,
 	useContext,
-	useEffect,
 	useMemo,
 	useRef,
 	type PropsWithChildren
 } from "react"
-import { EventParams, TrackContextValue, EventFilter } from "./types"
+import { EventParams, TrackContextValue, EventFilter, EventTransformer } from "./types"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
@@ -22,22 +21,56 @@ export const useTracker = () => {
 type TrackRootProps = PropsWithChildren<{
 	onEvent: (eventName: string, params?: EventParams) => void
 	filter?: EventFilter
+	transform?: EventTransformer
 }>
 
-const TrackRootComponent = ({ onEvent, children, filter }: TrackRootProps) => {
+const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootProps) => {
 	const parentCtx = useContext(TrackContext)
 
 	const onEventRef = useFreshRef(onEvent)
 	const filterRef = useFreshRef(filter)
+	const transformRef = useFreshRef(transform)
 
 	const sendEvent = useCallback(
 		(eventName: string, params?: EventParams) => {
-			const shouldTrack = filterRef.current ? filterRef.current(eventName, params) : true
+			let localName = eventName
+			let localParams = params
 
-			if (shouldTrack) {
-				onEventRef.current(eventName, params)
+			let shouldProcessLocal = true
+
+			// 1. Transform (local)
+			if (transformRef.current) {
+				try {
+					const paramsCopy = params ? { ...params } : params
+					const result = transformRef.current(eventName, paramsCopy)
+					localName = result.eventName
+					localParams = result.params
+				} catch (error) {
+					console.error("TrackRoot transform failed:", error)
+					shouldProcessLocal = false
+				}
 			}
 
+			// 2. Filter - checks transformed values (only if transform succeeded)
+			try {
+				if (shouldProcessLocal && filterRef.current) {
+					shouldProcessLocal = filterRef.current(localName, localParams)
+				}
+			} catch (error) {
+				console.error("TrackRoot filter failed:", error)
+				shouldProcessLocal = false
+			}
+
+			// 3. Send to local handler
+			if (shouldProcessLocal) {
+				try {
+					onEventRef.current(localName, localParams)
+				} catch (error) {
+					console.error("TrackRoot onEvent failed:", error)
+				}
+			}
+
+			// 4. Bubble original event to parent (ALWAYS happens)
 			if (parentCtx) {
 				parentCtx.sendEvent(eventName, params)
 			}
@@ -52,10 +85,16 @@ const TrackRootComponent = ({ onEvent, children, filter }: TrackRootProps) => {
 
 const factory = (
 	onEvent: (eventName: string, params?: EventParams) => void,
-	filter?: EventFilter
+	filter?: EventFilter,
+	transform?: EventTransformer
 ) => {
-	return (props: Omit<TrackRootProps, "onEvent" | "filter">) => (
-		<TrackRootComponent onEvent={onEvent} filter={filter} {...props} />
+	return (props: Omit<TrackRootProps, "onEvent" | "filter" | "transform">) => (
+		<TrackRootComponent
+			onEvent={onEvent}
+			filter={filter}
+			transform={transform}
+			{...props}
+		/>
 	)
 }
 
@@ -93,4 +132,15 @@ function useFreshRef<T>(data: T) {
 	ref.current = data
 
 	return ref
+}
+
+function safeCall(fn: () => any, errorMessage: string): void {
+	try {
+		const result = fn()
+		if (result instanceof Promise) {
+			result.catch((error) => console.error(errorMessage, error))
+		}
+	} catch (error) {
+		console.error(errorMessage, error)
+	}
 }

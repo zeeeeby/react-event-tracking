@@ -5,3 +5,10 @@ export type TrackContextValue = {
 }
 
 export type EventFilter = (eventName: string, params?: EventParams) => boolean
+
+export type TransformedEvent = { eventName: string; params?: EventParams }
+
+export type EventTransformer = (
+	eventName: string,
+	params?: EventParams
+) => TransformedEvent
