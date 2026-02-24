@@ -6,6 +6,7 @@ A convenient React context for tracking analytics events.
 - **Nested Contexts**: Automatically merges parameters from parent providers.
 - **Zero Re-renders**: No need to wrap props in `useCallback`/`useMemo`.
 
+## Table of Contents
 <!-- toc -->
 
 - [Installation](#installation)
