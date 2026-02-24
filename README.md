@@ -1,3 +1,4 @@
+
 # react-event-tracking [![NPM Version](https://img.shields.io/npm/v/react-event-tracking)](https://www.npmjs.com/package/react-event-tracking)
 A convenient React context for tracking analytics events. 
 
@@ -56,21 +57,6 @@ const MyButton = () => {
 };
 ```
 
-## Built-in Hooks   
-
-### useMountEvent   
-
-Sends an event when the component mounts.
-
-```tsx
-import { useMountEvent } from 'react-event-tracking';
-
-export function DashboardScreen(props) {
-    useMountEvent('page_view', { screen: 'dashboard' });
-
-    return <div>Dashboard</div>;
-}
-```
 ## Best Practices
 
 A common pattern is to layer data from global to specific. Here is how parameters merge:
@@ -115,5 +101,22 @@ The library merges all layers automatically. The handler receives:
   productId: 'sku-999',
   // From Event
   quantity: 1
+}
+```
+
+
+## Built-in Hooks   
+
+### useMountEvent   
+
+Sends an event when the component mounts.
+
+```tsx
+import { useMountEvent } from 'react-event-tracking';
+
+export function DashboardScreen(props) {
+    useMountEvent('page_view', { screen: 'dashboard' });
+
+    return <div>Dashboard</div>;
 }
 ```
