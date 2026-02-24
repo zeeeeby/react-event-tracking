@@ -53,26 +53,24 @@ describe("TrackRoot transform", () => {
 		expect(onEvent).toHaveBeenCalledWith("submit", { user: "alice", valid: true })
 	})
 
-	it("should apply filter AFTER transformation", async () => {
+	it("should apply filter BEFORE transform", async () => {
 		const onEvent = vi.fn()
 
-		// Transform: "click" -> "valid_click"
-		const transform = (name: string) => ({
-			eventName: `valid_${name}`
-		})
+		const filter = (name: string) => name.startsWith("allowed_")
 
-		// Filter: allows only starting with "valid_"
-		const filter = (name: string) => name.startsWith("valid_")
+		const transform = (name: string) => ({
+			eventName: name.replace("allowed_", "transformed_")
+		})
 
 		render(
 			<TrackRoot onEvent={onEvent} transform={transform} filter={filter}>
-				<TestButton eventName="click" />
+				<TestButton eventName="allowed_click" />
 			</TrackRoot>
 		)
 
 		await userEvent.click(screen.getByText("Click me"))
 
-		expect(onEvent).toHaveBeenCalledWith("valid_click", undefined)
+		expect(onEvent).toHaveBeenCalledWith("transformed_click", undefined)
 	})
 
 	it("should bubble ORIGINAL event to parent (ignoring local transform)", async () => {

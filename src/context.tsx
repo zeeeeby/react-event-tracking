@@ -38,8 +38,18 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 
 			let shouldProcessLocal = true
 
-			// 1. Transform (local)
-			if (transformRef.current) {
+			// 1. Filter (local)
+			try {
+				if (filterRef.current) {
+					shouldProcessLocal = filterRef.current(localName, localParams)
+				}
+			} catch (error) {
+				console.error("TrackRoot filter failed:", error)
+				shouldProcessLocal = false
+			}
+
+			// 2. Transform (local)
+			if (shouldProcessLocal && transformRef.current) {
 				try {
 					const paramsCopy = params ? { ...params } : params
 					const result = transformRef.current(eventName, paramsCopy)
@@ -49,16 +59,6 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 					console.error("TrackRoot transform failed:", error)
 					shouldProcessLocal = false
 				}
-			}
-
-			// 2. Filter - checks transformed values (only if transform succeeded)
-			try {
-				if (shouldProcessLocal && filterRef.current) {
-					shouldProcessLocal = filterRef.current(localName, localParams)
-				}
-			} catch (error) {
-				console.error("TrackRoot filter failed:", error)
-				shouldProcessLocal = false
 			}
 
 			// 3. Send to local handler
