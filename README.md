@@ -131,7 +131,7 @@ const App = () => (
 
 ### Transforming Events
 
-You can modify the event name or parameters before they reach the handler using the `transform` prop (or the third argument in `factory`). This is useful for normalizing data or mapping events to specific formats required by analytics providers.
+You can modify the event name or parameters before they reach the handler using the `transform` prop (or the third argument in `factory`).
 
 Note: Transformations apply locally and do not affect the event bubbling up to parent providers.
 
