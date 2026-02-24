@@ -63,7 +63,7 @@ A common pattern is to layer data from global to specific. Here is how parameter
 
 ```tsx
 // 1. ROOT: Global data (App Version, Environment)
-<TrackRoot onEvent={handleEvent} params={{ appVersion: '1.0.0' }}>
+<TrackRoot onEvent={handleEvent} initialParams={{ appVersion: '1.0.0' }}>
   
   {/* 2. PAGE: Screen-level context */}
   <TrackProvider params={{ page: 'ProductDetails', category: 'Shoes' }}>
