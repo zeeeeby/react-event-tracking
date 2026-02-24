@@ -103,7 +103,8 @@ const handleClick = () => {
 **Resulting Event Payload:**
 The library merges all layers automatically. The handler receives:
 
-```json
+
+```js
 {
   // From Root
   appVersion: '1.0.0',
