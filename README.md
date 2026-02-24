@@ -7,6 +7,7 @@ A convenient React context for tracking analytics events.
 - **Zero Re-renders**: No need to wrap props in `useCallback`/`useMemo`.
 
 ## Table of Contents
+
 <!-- toc -->
 
 - [Installation](#installation)
