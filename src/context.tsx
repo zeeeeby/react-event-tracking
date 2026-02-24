@@ -20,9 +20,11 @@ export const useTracker = () => {
 
 export const TrackRoot = ({
 	onEvent,
-	children
+	children,
+	initialParams
 }: PropsWithChildren<{
 	onEvent: (eventName: string, params?: EventParams) => void
+	initialParams?: EventParams
 }>) => {
 	const onEventRef = useRef(onEvent)
 	onEventRef.current = onEvent
@@ -33,7 +35,11 @@ export const TrackRoot = ({
 
 	const value = useMemo(() => ({ sendEvent }), [sendEvent])
 
-	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
+	return (
+		<TrackContext.Provider value={value}>
+			<TrackProvider params={initialParams || {}}>{children}</TrackProvider>
+		</TrackContext.Provider>
+	)
 }
 
 export const TrackProvider = ({

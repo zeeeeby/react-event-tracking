@@ -26,7 +26,7 @@ describe("useMountEvent", () => {
 		)
 
 		expect(onEvent).toHaveBeenCalledTimes(1)
-		expect(onEvent).toHaveBeenCalledWith("page_view", undefined)
+		expect(onEvent).toHaveBeenCalledWith("page_view", {})
 	})
 
 	it("should send event with params on mount", () => {
