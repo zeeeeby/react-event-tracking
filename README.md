@@ -71,3 +71,48 @@ export function DashboardScreen(props) {
     return <div>Dashboard</div>;
 }
 ```
+## Best Practices
+
+A common pattern is to layer data from global to specific. Here is how parameters merge:
+
+```tsx
+// 1. ROOT: Global data (App Version, Environment)
+<TrackRoot onEvent={handleEvent} params={{ appVersion: '1.0.0' }}>
+  
+  {/* 2. PAGE: Screen-level context */}
+  <TrackProvider params={{ page: 'ProductDetails', category: 'Shoes' }}>
+    
+    {/* 3. COMPONENT: Widget-level context */}
+    <TrackProvider params={{ productId: 'sku-999' }}>
+       <AddToCartButton />
+    </TrackProvider>
+
+  </TrackProvider>
+</TrackRoot>
+
+// Inside AddToCartButton:
+const { sendEvent } = useTracker();
+
+// 4. EVENT: Action-specific data
+// When clicked, we only pass what changed right now.
+const handleClick = () => {
+  sendEvent('add_to_cart', { quantity: 1 });
+};
+```
+
+**Resulting Event Payload:**
+The library merges all layers automatically. The handler receives:
+
+```json
+{
+  // From Root
+  appVersion: '1.0.0',
+  // From Page Provider
+  page: 'ProductDetails',
+  category: 'Shoes',
+  // From Component Provider
+  productId: 'sku-999',
+  // From Event
+  quantity: 1
+}
+```
