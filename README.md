@@ -154,20 +154,6 @@ const AmpltitudeUS = TrackRoot.factory(
 );
 ```
 
-Or using the component directly:
-
-```tsx
-<TrackRoot 
-  onEvent={handleEvent} 
-  transform={(name, params) => ({
-    eventName: name,
-    params: { ...params, timestamp: Date.now() }
-  })}
->
-  <App />
-</TrackRoot>
-```
-
 ## Best Practices
 
 A common pattern is to layer data from global to specific. Here is how parameters merge:
