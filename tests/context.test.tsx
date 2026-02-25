@@ -208,7 +208,7 @@ describe("Track Context", () => {
 		await userEvent.click(screen.getByText("Click me"))
 
 		expect(onChildEvent).toHaveBeenCalled()
-		expect(onParentEvent).toHaveBeenCalledWith("click", undefined)
+		expect(onParentEvent).toHaveBeenCalledWith("click", {})
 		expect(consoleSpy).toHaveBeenCalledWith(
 			"TrackRoot onEvent failed:",
 			expect.any(Error)

@@ -26,7 +26,7 @@ describe("TrackRoot filter", () => {
 
 		// Allowed
 		await userEvent.click(buttons[0])
-		expect(onEvent).toHaveBeenCalledWith("allow_me", undefined)
+		expect(onEvent).toHaveBeenCalledWith("allow_me", {})
 		onEvent.mockClear()
 
 		// Blocked
@@ -73,7 +73,7 @@ describe("TrackRoot filter", () => {
 
 		expect(onChildEvent).not.toHaveBeenCalled()
 
-		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+		expect(onParentEvent).toHaveBeenCalledWith("test", {})
 	})
 
 	it("should handle errors in filter function gracefully and still bubble", async () => {
@@ -99,7 +99,7 @@ describe("TrackRoot filter", () => {
 		expect(onChildEvent).not.toHaveBeenCalled()
 
 		// Parent handler still called (bubbling preserved)
-		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+		expect(onParentEvent).toHaveBeenCalledWith("test", {})
 
 		// Error logged
 		expect(consoleSpy).toHaveBeenCalledWith(

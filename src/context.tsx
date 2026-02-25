@@ -19,10 +19,12 @@ export const useTracker = () => {
 }
 
 type TrackRootProps = PropsWithChildren<{
-	onEvent: (eventName: string, params?: EventParams) => void
+	onEvent: (eventName: string, params: EventParams) => void
 	filter?: EventFilter
 	transform?: EventTransformer
 }>
+
+const EmptyParams = {} as EventParams
 
 const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootProps) => {
 	const parentCtx = useContext(TrackContext)
@@ -34,7 +36,7 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 	const sendEvent = useCallback(
 		(eventName: string, params?: EventParams) => {
 			let localName = eventName
-			let localParams = params
+			let localParams = params || EmptyParams
 
 			let shouldProcessLocal = true
 
@@ -51,7 +53,7 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 			// 2. Transform (local)
 			if (shouldProcessLocal && transformRef.current) {
 				try {
-					const paramsCopy = params ? { ...params } : params
+					const paramsCopy = params ? { ...params } : EmptyParams
 					const result = transformRef.current(eventName, paramsCopy)
 					localName = result.eventName
 					localParams = result.params

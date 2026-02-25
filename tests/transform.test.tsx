@@ -1,5 +1,4 @@
 import { describe, it, expect, vi } from "vitest"
-import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { TrackRoot, useTracker } from "../src"
@@ -58,8 +57,9 @@ describe("TrackRoot transform", () => {
 
 		const filter = (name: string) => name.startsWith("allowed_")
 
-		const transform = (name: string) => ({
-			eventName: name.replace("allowed_", "transformed_")
+		const transform = (name: string, params: any) => ({
+			eventName: name.replace("allowed_", "transformed_"),
+			params
 		})
 
 		render(
@@ -70,17 +70,19 @@ describe("TrackRoot transform", () => {
 
 		await userEvent.click(screen.getByText("Click me"))
 
-		expect(onEvent).toHaveBeenCalledWith("transformed_click", undefined)
+		expect(onEvent).toHaveBeenCalledWith("transformed_click", {})
 	})
 
 	it("should bubble ORIGINAL event to parent (ignoring local transform)", async () => {
 		const onParentEvent = vi.fn()
 		const onChildEvent = vi.fn()
 
-		const transform = (name: string) => ({
-			eventName: `transformed_${name}`
-		})
-
+		const transform = (name: string, params: any) => {
+			return {
+				eventName: `transformed_${name}`,
+				params
+			}
+		}
 		render(
 			<TrackRoot onEvent={onParentEvent}>
 				<TrackRoot onEvent={onChildEvent} transform={transform}>
@@ -92,10 +94,10 @@ describe("TrackRoot transform", () => {
 		await userEvent.click(screen.getByText("Click me"))
 
 		// Child receives transformed event
-		expect(onChildEvent).toHaveBeenCalledWith("transformed_original", undefined)
+		expect(onChildEvent).toHaveBeenCalledWith("transformed_original", {})
 
 		// Parent receives original event
-		expect(onParentEvent).toHaveBeenCalledWith("original", undefined)
+		expect(onParentEvent).toHaveBeenCalledWith("original", {})
 	})
 
 	it("should work with factory", async () => {
@@ -115,7 +117,7 @@ describe("TrackRoot transform", () => {
 
 		await userEvent.click(screen.getByText("Click me"))
 
-		expect(onEvent).toHaveBeenCalledWith("TEST", undefined)
+		expect(onEvent).toHaveBeenCalledWith("TEST", {})
 	})
 
 	it("should handle errors in transform function gracefully and still bubble", async () => {
@@ -141,7 +143,7 @@ describe("TrackRoot transform", () => {
 		expect(onChildEvent).not.toHaveBeenCalled()
 
 		// Parent handler still called (bubbling preserved)
-		expect(onParentEvent).toHaveBeenCalledWith("test", undefined)
+		expect(onParentEvent).toHaveBeenCalledWith("test", {})
 
 		// Error logged
 		expect(consoleSpy).toHaveBeenCalledWith(

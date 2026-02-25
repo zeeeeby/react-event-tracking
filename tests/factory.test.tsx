@@ -40,7 +40,7 @@ describe("TrackRoot.factory", () => {
 
 		// 1. Allowed
 		await userEvent.click(buttons[0])
-		expect(onEvent).toHaveBeenCalledWith("allowed", undefined)
+		expect(onEvent).toHaveBeenCalledWith("allowed", {})
 		onEvent.mockClear()
 
 		// 2. Blocked
@@ -63,7 +63,7 @@ describe("TrackRoot.factory", () => {
 		const buttons = screen.getAllByText("Click me")
 
 		await userEvent.click(buttons[0])
-		expect(onEvent).toHaveBeenCalledWith("ui.click", undefined)
+		expect(onEvent).toHaveBeenCalledWith("ui.click", {})
 		onEvent.mockClear()
 
 		await userEvent.click(buttons[1])
@@ -85,7 +85,7 @@ describe("TrackRoot.factory", () => {
 
 		// Matches regex
 		await userEvent.click(buttons[0])
-		expect(onEvent).toHaveBeenCalledWith("user_123", undefined)
+		expect(onEvent).toHaveBeenCalledWith("user_123", {})
 		onEvent.mockClear()
 
 		// Does not match regex
@@ -138,14 +138,14 @@ describe("TrackRoot.factory", () => {
 		const buttons = screen.getAllByText("Click me")
 
 		await userEvent.click(buttons[0])
-		expect(onLocal).toHaveBeenCalledWith("global.init", undefined)
-		expect(onGlobal).toHaveBeenCalledWith("global.init", undefined)
+		expect(onLocal).toHaveBeenCalledWith("global.init", {})
+		expect(onGlobal).toHaveBeenCalledWith("global.init", {})
 
 		onLocal.mockClear()
 		onGlobal.mockClear()
 
 		await userEvent.click(buttons[1])
-		expect(onLocal).toHaveBeenCalledWith("local.click", undefined)
+		expect(onLocal).toHaveBeenCalledWith("local.click", {})
 		expect(onGlobal).not.toHaveBeenCalled()
 	})
 })
