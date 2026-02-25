@@ -5,6 +5,9 @@ A convenient React context for tracking analytics events.
 
 - **Nested Contexts**: Automatically merges parameters from parent providers.
 - **Zero Re-renders**: No need to wrap props in `useCallback`/`useMemo`.
+- **Multiple Providers**: Send events to different analytics services.
+- **Event Filtering**: Control which events are sent to which provider.
+- **Event Transformation**: Modify event names or parameters before they are sent to provider.
 
 ## Table of Contents
 
