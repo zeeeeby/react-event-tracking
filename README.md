@@ -144,7 +144,7 @@ const AmpltitudeUS = TrackRoot.factory(
   (name, params) => {
     if (params?.userRegion === 'EU') {
       // Remove PII (Personally Identifiable Information)
-      const { userId, email, ...safeParams } = params || {};
+      const { userId, email, ...safeParams } = params;
       return { 
         eventName: name, 
         params: safeParams 
