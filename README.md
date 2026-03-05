@@ -19,6 +19,7 @@ A convenient React context for tracking analytics events.
   * [Multiple Trackers & Factory](#multiple-trackers--factory)
   * [Filtering Events](#filtering-events)
   * [Transforming Events](#transforming-events)
+  * [TypeScript Generics Support](#typescript-generics-support)
 - [Best Practices](#best-practices)
 - [Built-in Hooks](#built-in-hooks)
   * [useMountEvent](#usemountevent)
@@ -161,6 +162,22 @@ const AmpltitudeUS = TrackRoot.factory(
     }
     return { eventName: name, params };
   }
+);
+```
+
+### TypeScript Generics Support
+
+`TrackProvider` supports generics for strict typing of the passed parameters.
+
+```tsx
+interface ScreenParams {
+  screen: "dashboard" | "authScreen"
+}
+
+const MyPage = () => (
+  <TrackProvider<ScreenParams> params={{ screen: 'dashboard' }}>
+    <Content />
+  </TrackProvider>
 );
 ```
 
