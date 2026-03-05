@@ -18,6 +18,29 @@ const TestButton = ({
 }
 
 describe("Track Context", () => {
+	it("should support sendEvent overload with object", async () => {
+		const onEvent = vi.fn()
+
+		const ObjectButton = () => {
+			const { sendEvent } = useTracker()
+			return (
+				<button onClick={() => sendEvent({ eventName: "obj_event", params: { a: 1 } })}>
+					Object Click
+				</button>
+			)
+		}
+
+		render(
+			<TrackRoot onEvent={onEvent}>
+				<ObjectButton />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Object Click"))
+
+		expect(onEvent).toHaveBeenCalledWith("obj_event", { a: 1 })
+	})
+
 	it("should send event from root", async () => {
 		const onEvent = vi.fn()
 

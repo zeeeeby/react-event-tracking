@@ -58,7 +58,6 @@ const Dashboard = () => (
 ```
 
 3. Send events conveniently. On button click, parameters will be merged.
-
 ```tsx
 import { useTracker } from 'react-event-tracking';
 
@@ -66,10 +65,17 @@ const MyButton = () => {
   const { sendEvent } = useTracker();
 
   return (
+    <>
     // event sent with parameters: { screen: 'dashboard', button_id: '123' }
     <button onClick={() => sendEvent('click', { button_id: '123' })}>
       Click me
     </button>
+
+    {/* Option B: Object call */}                                                                                                           
+    <button onClick={() => sendEvent({ eventName: 'click', params: { button_id: '456' } })}>                                                
+      Click me too                                                                                                                          
+    </button>  
+    </>
   );
 };
 ```

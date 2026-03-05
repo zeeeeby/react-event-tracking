@@ -1,8 +1,11 @@
 export type EventParams = Record<string, any>
 
-export type TrackContextValue = {
-	sendEvent: (eventName: string, params?: EventParams) => void
+export interface TrackContextValue {
+	sendEvent(eventName: string, params?: EventParams): void
+	sendEvent(event: EventObject): void
 }
+
+export type EventObject = { eventName: string; params?: EventParams }
 
 export type EventFilter = (eventName: string, params: EventParams) => boolean
 

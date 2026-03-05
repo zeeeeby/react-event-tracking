@@ -5,7 +5,13 @@ import React, {
 	useRef,
 	type PropsWithChildren
 } from "react"
-import { EventParams, TrackContextValue, EventFilter, EventTransformer } from "./types"
+import {
+	EventParams,
+	TrackContextValue,
+	EventFilter,
+	EventTransformer,
+	EventObject
+} from "./types"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
@@ -33,54 +39,69 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 	const filterRef = useFreshRef(filter)
 	const transformRef = useFreshRef(transform)
 
-	const sendEvent = useCallback(
-		(eventName: string, params?: EventParams) => {
-			let localName = eventName
-			let localParams = params || EmptyParams
+	function sendEvent(eventName: string, params?: EventParams): void
+	function sendEvent(event: EventObject): void
+	function sendEvent(
+		eventNameOrObject: string | EventObject,
+		eventParams?: EventParams
+	) {
+		let eventName: string
+		let incomingParams: EventParams | undefined
 
-			let shouldProcessLocal = true
+		if (typeof eventNameOrObject === "object") {
+			eventName = eventNameOrObject.eventName
+			incomingParams = eventNameOrObject.params
+		} else {
+			eventName = eventNameOrObject
+			incomingParams = eventParams
+		}
 
-			// 1. Filter (local)
+		let localName = eventName
+		let localParams = incomingParams || EmptyParams
+
+		let shouldProcessLocal = true
+
+		// 1. Filter (local)
+		try {
+			if (filterRef.current) {
+				shouldProcessLocal = filterRef.current(localName, localParams)
+			}
+		} catch (error) {
+			console.error("TrackRoot filter failed:", error)
+			shouldProcessLocal = false
+		}
+
+		// 2. Transform (local)
+		if (shouldProcessLocal && transformRef.current) {
 			try {
-				if (filterRef.current) {
-					shouldProcessLocal = filterRef.current(localName, localParams)
-				}
+				const paramsCopy = incomingParams ? { ...incomingParams } : EmptyParams
+				const result = transformRef.current(eventName, paramsCopy)
+				localName = result.eventName
+				localParams = result.params
 			} catch (error) {
-				console.error("TrackRoot filter failed:", error)
+				console.error("TrackRoot transform failed:", error)
 				shouldProcessLocal = false
 			}
+		}
 
-			// 2. Transform (local)
-			if (shouldProcessLocal && transformRef.current) {
-				try {
-					const paramsCopy = params ? { ...params } : EmptyParams
-					const result = transformRef.current(eventName, paramsCopy)
-					localName = result.eventName
-					localParams = result.params
-				} catch (error) {
-					console.error("TrackRoot transform failed:", error)
-					shouldProcessLocal = false
-				}
+		// 3. Send to local handler
+		if (shouldProcessLocal) {
+			try {
+				onEventRef.current(localName, localParams)
+			} catch (error) {
+				console.error("TrackRoot onEvent failed:", error)
 			}
+		}
 
-			// 3. Send to local handler
-			if (shouldProcessLocal) {
-				try {
-					onEventRef.current(localName, localParams)
-				} catch (error) {
-					console.error("TrackRoot onEvent failed:", error)
-				}
-			}
+		// 4. Bubble original event to parent (ALWAYS happens)
+		if (parentCtx) {
+			parentCtx.sendEvent(eventName, incomingParams)
+		}
+	}
 
-			// 4. Bubble original event to parent (ALWAYS happens)
-			if (parentCtx) {
-				parentCtx.sendEvent(eventName, params)
-			}
-		},
-		[parentCtx]
-	)
+	const sendEventCached = useCallback(sendEvent, [parentCtx])
 
-	const value = useMemo(() => ({ sendEvent }), [sendEvent])
+	const value = useMemo(() => ({ sendEvent: sendEventCached }), [sendEventCached])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
@@ -112,19 +133,33 @@ export const TrackProvider = ({
 
 	const paramsRef = useFreshRef(params)
 
-	const sendEvent = useCallback(
-		(eventName: string, eventParams?: EventParams) => {
-			const currentParams = paramsRef.current
+	function sendEvent(eventName: string, params?: EventParams): void
+	function sendEvent(event: EventObject): void
+	function sendEvent(
+		eventNameOrObject: string | EventObject,
+		eventParams?: EventParams
+	) {
+		let eventName: string
+		let incomingParams: EventParams | undefined
 
-			ctx.sendEvent(eventName, {
-				...currentParams,
-				...eventParams
-			})
-		},
-		[ctx]
-	)
+		if (typeof eventNameOrObject === "object") {
+			eventName = eventNameOrObject.eventName
+			incomingParams = eventNameOrObject.params
+		} else {
+			eventName = eventNameOrObject
+			incomingParams = eventParams
+		}
 
-	const value = useMemo(() => ({ sendEvent }), [sendEvent])
+		const currentParams = paramsRef.current
+
+		ctx.sendEvent(eventName, {
+			...currentParams,
+			...incomingParams
+		})
+	}
+	const sendEventCached = useCallback(sendEvent, [ctx])
+
+	const value = useMemo(() => ({ sendEvent: sendEventCached }), [sendEventCached])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
@@ -134,15 +169,4 @@ function useFreshRef<T>(data: T) {
 	ref.current = data
 
 	return ref
-}
-
-function safeCall(fn: () => any, errorMessage: string): void {
-	try {
-		const result = fn()
-		if (result instanceof Promise) {
-			result.catch((error) => console.error(errorMessage, error))
-		}
-	} catch (error) {
-		console.error(errorMessage, error)
-	}
 }
