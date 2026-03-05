@@ -1,4 +1,4 @@
-export type EventParams = Record<string, any>
+export type EventParams<T extends Record<string, any> = Record<string, any>> = T
 
 export interface TrackContextValue {
 	sendEvent(eventName: string, params?: EventParams): void

@@ -118,11 +118,11 @@ const factory = (
 
 export const TrackRoot = Object.assign(TrackRootComponent, { factory })
 
-export const TrackProvider = ({
+export const TrackProvider = <T extends Record<string, any>>({
 	params,
 	children
 }: PropsWithChildren<{
-	params: EventParams
+	params: EventParams<T>
 }>) => {
 	const ctx = useTracker()
 
