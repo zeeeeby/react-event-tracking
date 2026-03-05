@@ -12,6 +12,7 @@ import {
 	EventTransformer,
 	EventObject
 } from "./types"
+import { parseEventArgs } from "./utils"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
@@ -45,16 +46,10 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 		eventNameOrObject: string | EventObject,
 		eventParams?: EventParams
 	) {
-		let eventName: string
-		let incomingParams: EventParams | undefined
-
-		if (typeof eventNameOrObject === "object") {
-			eventName = eventNameOrObject.eventName
-			incomingParams = eventNameOrObject.params
-		} else {
-			eventName = eventNameOrObject
-			incomingParams = eventParams
-		}
+		const { eventName, params: incomingParams } = parseEventArgs(
+			eventNameOrObject,
+			eventParams
+		)
 
 		let localName = eventName
 		let localParams = incomingParams || EmptyParams
@@ -139,16 +134,10 @@ export const TrackProvider = ({
 		eventNameOrObject: string | EventObject,
 		eventParams?: EventParams
 	) {
-		let eventName: string
-		let incomingParams: EventParams | undefined
-
-		if (typeof eventNameOrObject === "object") {
-			eventName = eventNameOrObject.eventName
-			incomingParams = eventNameOrObject.params
-		} else {
-			eventName = eventNameOrObject
-			incomingParams = eventParams
-		}
+		const { eventName, params: incomingParams } = parseEventArgs(
+			eventNameOrObject,
+			eventParams
+		)
 
 		const currentParams = paramsRef.current
 

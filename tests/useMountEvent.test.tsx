@@ -15,6 +15,17 @@ const TestComponent = ({
 	return <div>Test Component</div>
 }
 
+const TestComponentObject = ({
+	eventName,
+	params
+}: {
+	eventName: string
+	params?: Record<string, any>
+}) => {
+	useMountEvent({ eventName, params })
+	return <div>Test Component</div>
+}
+
 describe("useMountEvent", () => {
 	it("should send event on mount", () => {
 		const onEvent = vi.fn()
@@ -22,6 +33,19 @@ describe("useMountEvent", () => {
 		render(
 			<TrackRoot onEvent={onEvent}>
 				<TestComponent eventName="page_view" />
+			</TrackRoot>
+		)
+
+		expect(onEvent).toHaveBeenCalledTimes(1)
+		expect(onEvent).toHaveBeenCalledWith("page_view", {})
+	})
+
+	it("should support overload", () => {
+		const onEvent = vi.fn()
+
+		render(
+			<TrackRoot onEvent={onEvent}>
+				<TestComponentObject eventName="page_view" />
 			</TrackRoot>
 		)
 
