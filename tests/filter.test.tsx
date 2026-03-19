@@ -2,10 +2,10 @@ import { describe, it, expect, vi } from "vitest"
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TrackRoot, useTracker } from "../src"
+import { TrackRoot, useReactEventTracking } from "../src"
 
 const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
-	const { sendEvent } = useTracker()
+	const { sendEvent } = useReactEventTracking()
 	return <button onClick={() => sendEvent(eventName, params)}>Click me</button>
 }
 

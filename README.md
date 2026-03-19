@@ -60,10 +60,10 @@ const Dashboard = () => (
 
 3. Send events conveniently. On button click, parameters will be merged.
 ```tsx
-import { useTracker } from 'react-event-tracking';
+import { useReactEventTracking } from 'react-event-tracking';
 
 const MyButton = () => {
-  const { sendEvent } = useTracker();
+  const { sendEvent } = useReactEventTracking();
 
   return (
     <>
@@ -203,7 +203,7 @@ A common pattern is to layer data from global to specific. Here is how parameter
 </TrackRoot>
 
 // Inside AddToCartButton:
-const { sendEvent } = useTracker();
+const { sendEvent } = useReactEventTracking();
 
 // 4. EVENT: Action-specific data
 // When clicked, we only pass what changed right now.

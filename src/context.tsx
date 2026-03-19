@@ -16,10 +16,10 @@ import { parseEventArgs } from "./utils"
 
 const TrackContext = React.createContext<TrackContextValue | null>(null)
 
-export const useTracker = () => {
+export const useReactEventTracking = () => {
 	const ctx = useContext(TrackContext)
 	if (!ctx) {
-		throw new Error("useTracker must be used within TrackRoot")
+		throw new Error("useReactEventTracking must be used within TrackRoot")
 	}
 
 	return ctx
@@ -101,16 +101,16 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
 
-const factory = (
-	onEvent: (eventName: string, params?: EventParams) => void,
-	filter?: EventFilter,
+const factory = (args: {
+	onEvent: (eventName: string, params?: EventParams) => void
+	filter?: EventFilter
 	transform?: EventTransformer
-) => {
+}) => {
 	return (props: Omit<TrackRootProps, "onEvent" | "filter" | "transform">) => (
 		<TrackRootComponent
-			onEvent={onEvent}
-			filter={filter}
-			transform={transform}
+			onEvent={args.onEvent}
+			filter={args.filter}
+			transform={args.transform}
 			{...props}
 		/>
 	)
@@ -124,7 +124,7 @@ export const TrackProvider = <T extends Record<string, any>>({
 }: PropsWithChildren<{
 	params: EventParams<T>
 }>) => {
-	const ctx = useTracker()
+	const ctx = useReactEventTracking()
 
 	const paramsRef = useFreshRef(params)
 

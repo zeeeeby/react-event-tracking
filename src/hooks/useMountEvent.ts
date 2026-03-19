@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { EventObject, EventParams } from "../types";
-import { useTracker } from "../context";
+import { useReactEventTracking } from "../context";
 import { parseEventArgs } from "../utils";
 
 export function useMountEvent(eventName: string, params?: EventParams): void;
 export function useMountEvent(event: EventObject): void;
 export function useMountEvent(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
-    const { sendEvent } = useTracker()
+    const { sendEvent } = useReactEventTracking()
 
     const counterRef = useRef(0);
 

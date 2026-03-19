@@ -1,17 +1,17 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TrackRoot, useTracker } from "../src"
+import { TrackRoot, useReactEventTracking } from "../src"
 
 const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
-	const { sendEvent } = useTracker()
+	const { sendEvent } = useReactEventTracking()
 	return <button onClick={() => sendEvent(eventName, params)}>Click me</button>
 }
 
 describe("TrackRoot.factory", () => {
 	it("should create a working TrackRoot component", async () => {
 		const onEvent = vi.fn()
-		const CustomRoot = TrackRoot.factory(onEvent)
+		const CustomRoot = TrackRoot.factory({ onEvent })
 
 		render(
 			<CustomRoot>
@@ -27,7 +27,10 @@ describe("TrackRoot.factory", () => {
 	it("should filter events based on function", async () => {
 		const onEvent = vi.fn()
 
-		const CustomRoot = TrackRoot.factory(onEvent, (name) => name === "allowed")
+		const CustomRoot = TrackRoot.factory({
+			onEvent,
+			filter: (name) => name === "allowed"
+		})
 
 		render(
 			<CustomRoot>
@@ -51,7 +54,10 @@ describe("TrackRoot.factory", () => {
 	it("should support wildcard matching via custom function", async () => {
 		const onEvent = vi.fn()
 		// Allow ui.*
-		const CustomRoot = TrackRoot.factory(onEvent, (name) => name.startsWith("ui."))
+		const CustomRoot = TrackRoot.factory({
+			onEvent,
+			filter: (name) => name.startsWith("ui.")
+		})
 
 		render(
 			<CustomRoot>
@@ -72,7 +78,10 @@ describe("TrackRoot.factory", () => {
 
 	it("should support regex matching via custom function", async () => {
 		const onEvent = vi.fn()
-		const CustomRoot = TrackRoot.factory(onEvent, (name) => /^user_\d+$/.test(name))
+		const CustomRoot = TrackRoot.factory({
+			onEvent,
+			filter: (name) => /^user_\d+$/.test(name)
+		})
 
 		render(
 			<CustomRoot>
@@ -97,8 +106,8 @@ describe("TrackRoot.factory", () => {
 		const onRoot1 = vi.fn()
 		const onRoot2 = vi.fn()
 
-		const Root1 = TrackRoot.factory(onRoot1)
-		const Root2 = TrackRoot.factory(onRoot2)
+		const Root1 = TrackRoot.factory({ onEvent: onRoot1 })
+		const Root2 = TrackRoot.factory({ onEvent: onRoot2 })
 
 		render(
 			<Root1>
@@ -119,12 +128,13 @@ describe("TrackRoot.factory", () => {
 		const onLocal = vi.fn()
 
 		// Global only wants "global.*" events
-		const GlobalRoot = TrackRoot.factory(onGlobal, (name) =>
-			name.startsWith("global.")
-		)
+		const GlobalRoot = TrackRoot.factory({
+			onEvent: onGlobal,
+			filter: (name) => name.startsWith("global.")
+		})
 
 		// Local wants everything (no filter)
-		const LocalRoot = TrackRoot.factory(onLocal)
+		const LocalRoot = TrackRoot.factory({ onEvent: onLocal })
 
 		render(
 			<GlobalRoot>

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import React from "react"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TrackRoot, TrackProvider, useTracker } from "../src"
+import { TrackRoot, TrackProvider, useReactEventTracking } from "../src"
 
 const TestButton = ({
 	eventName,
@@ -13,7 +13,7 @@ const TestButton = ({
 	params?: Record<string, any>
 	label?: string
 }) => {
-	const { sendEvent } = useTracker()
+	const { sendEvent } = useReactEventTracking()
 	return <button onClick={() => sendEvent(eventName, params)}>{label}</button>
 }
 
@@ -22,7 +22,7 @@ describe("Track Context", () => {
 		const onEvent = vi.fn()
 
 		const ObjectButton = () => {
-			const { sendEvent } = useTracker()
+			const { sendEvent } = useReactEventTracking()
 			return (
 				<button onClick={() => sendEvent({ eventName: "obj_event", params: { a: 1 } })}>
 					Object Click
@@ -144,7 +144,7 @@ describe("Track Context", () => {
 		const renderFn = vi.fn()
 
 		const MemoChild = React.memo(() => {
-			useTracker()
+			useReactEventTracking()
 			renderFn()
 			return <div>Memo Child</div>
 		})
@@ -178,7 +178,7 @@ describe("Track Context", () => {
 
 		expect(() => {
 			render(<TestButton eventName="fail" label="Fail Click" />)
-		}).toThrow("useTracker must be used within TrackRoot")
+		}).toThrow("useReactEventTracking must be used within TrackRoot")
 
 		consoleSpy.mockRestore()
 	})

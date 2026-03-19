@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TrackRoot, useTracker } from "../src"
+import { TrackRoot, useReactEventTracking } from "../src"
 
 const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
-	const { sendEvent } = useTracker()
+	const { sendEvent } = useReactEventTracking()
 	return <button onClick={() => sendEvent(eventName, params)}>Click me</button>
 }
 
@@ -103,11 +103,10 @@ describe("TrackRoot transform", () => {
 	it("should work with factory", async () => {
 		const onEvent = vi.fn()
 
-		const CustomRoot = TrackRoot.factory(
+		const CustomRoot = TrackRoot.factory({
 			onEvent,
-			undefined, // no filter
-			(name, params) => ({ eventName: name.toUpperCase(), params })
-		)
+			transform: (name, params) => ({ eventName: name.toUpperCase(), params })
+		})
 
 		render(
 			<CustomRoot>
