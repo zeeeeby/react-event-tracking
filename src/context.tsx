@@ -40,12 +40,9 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 	const filterRef = useFreshRef(filter)
 	const transformRef = useFreshRef(transform)
 
-	function sendEvent(eventName: string, params?: EventParams): void
-	function sendEvent(event: EventObject): void
-	function sendEvent(
-		eventNameOrObject: string | EventObject,
-		eventParams?: EventParams
-	) {
+	function track(eventName: string, params?: EventParams): void
+	function track(event: EventObject): void
+	function track(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
 		const { eventName, params: incomingParams } = parseEventArgs(
 			eventNameOrObject,
 			eventParams
@@ -90,13 +87,13 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 
 		// 4. Bubble original event to parent (ALWAYS happens)
 		if (parentCtx) {
-			parentCtx.sendEvent(eventName, incomingParams)
+			parentCtx.track(eventName, incomingParams)
 		}
 	}
 
-	const sendEventCached = useCallback(sendEvent, [parentCtx])
+	const trackCached = useCallback(track, [parentCtx])
 
-	const value = useMemo(() => ({ sendEvent: sendEventCached }), [sendEventCached])
+	const value = useMemo(() => ({ track: trackCached }), [trackCached])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
@@ -128,12 +125,9 @@ export const TrackProvider = <T extends Record<string, any>>({
 
 	const paramsRef = useFreshRef(params)
 
-	function sendEvent(eventName: string, params?: EventParams): void
-	function sendEvent(event: EventObject): void
-	function sendEvent(
-		eventNameOrObject: string | EventObject,
-		eventParams?: EventParams
-	) {
+	function track(eventName: string, params?: EventParams): void
+	function track(event: EventObject): void
+	function track(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
 		const { eventName, params: incomingParams } = parseEventArgs(
 			eventNameOrObject,
 			eventParams
@@ -141,14 +135,14 @@ export const TrackProvider = <T extends Record<string, any>>({
 
 		const currentParams = paramsRef.current
 
-		ctx.sendEvent(eventName, {
+		ctx.track(eventName, {
 			...currentParams,
 			...incomingParams
 		})
 	}
-	const sendEventCached = useCallback(sendEvent, [ctx])
+	const trackCached = useCallback(track, [ctx])
 
-	const value = useMemo(() => ({ sendEvent: sendEventCached }), [sendEventCached])
+	const value = useMemo(() => ({ track: trackCached }), [trackCached])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }

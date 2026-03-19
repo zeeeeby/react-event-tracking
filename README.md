@@ -63,17 +63,17 @@ const Dashboard = () => (
 import { useReactEventTracking } from 'react-event-tracking';
 
 const MyButton = () => {
-  const { sendEvent } = useReactEventTracking();
+  const { track } = useReactEventTracking();
 
   return (
     <>
     // event sent with parameters: { screen: 'dashboard', button_id: '123' }
-    <button onClick={() => sendEvent('click', { button_id: '123' })}>
+    <button onClick={() => track('click', { button_id: '123' })}>
       Click me
     </button>
 
     {/* Option B: Object call */}                                                                                                           
-    <button onClick={() => sendEvent({ eventName: 'click', params: { button_id: '456' } })}>                                                
+    <button onClick={() => track({ eventName: 'click', params: { button_id: '456' } })}>                                                
       Click me too                                                                                                                          
     </button>  
     </>
@@ -203,12 +203,12 @@ A common pattern is to layer data from global to specific. Here is how parameter
 </TrackRoot>
 
 // Inside AddToCartButton:
-const { sendEvent } = useReactEventTracking();
+const { track } = useReactEventTracking();
 
 // 4. EVENT: Action-specific data
 // When clicked, we only pass what changed right now.
 const handleClick = () => {
-  sendEvent('add_to_cart', { quantity: 1 });
+  track('add_to_cart', { quantity: 1 });
 };
 ```
 

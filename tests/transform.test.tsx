@@ -4,8 +4,8 @@ import userEvent from "@testing-library/user-event"
 import { TrackRoot, useReactEventTracking } from "../src"
 
 const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
-	const { sendEvent } = useReactEventTracking()
-	return <button onClick={() => sendEvent(eventName, params)}>Click me</button>
+	const { track } = useReactEventTracking()
+	return <button onClick={() => track(eventName, params)}>Click me</button>
 }
 
 describe("TrackRoot transform", () => {

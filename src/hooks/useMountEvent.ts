@@ -6,7 +6,7 @@ import { parseEventArgs } from "../utils";
 export function useMountEvent(eventName: string, params?: EventParams): void;
 export function useMountEvent(event: EventObject): void;
 export function useMountEvent(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
-    const { sendEvent } = useReactEventTracking()
+    const { track } = useReactEventTracking()
 
     const counterRef = useRef(0);
 
@@ -17,6 +17,6 @@ export function useMountEvent(eventNameOrObject: string | EventObject, eventPara
             return;
         }
         counterRef.current++;
-        sendEvent(eventName, params);
+        track(eventName, params);
     }, []);
 }

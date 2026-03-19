@@ -13,18 +13,18 @@ const TestButton = ({
 	params?: Record<string, any>
 	label?: string
 }) => {
-	const { sendEvent } = useReactEventTracking()
-	return <button onClick={() => sendEvent(eventName, params)}>{label}</button>
+	const { track } = useReactEventTracking()
+	return <button onClick={() => track(eventName, params)}>{label}</button>
 }
 
 describe("Track Context", () => {
-	it("should support sendEvent overload with object", async () => {
+	it("should support track overload with object", async () => {
 		const onEvent = vi.fn()
 
 		const ObjectButton = () => {
-			const { sendEvent } = useReactEventTracking()
+			const { track } = useReactEventTracking()
 			return (
-				<button onClick={() => sendEvent({ eventName: "obj_event", params: { a: 1 } })}>
+				<button onClick={() => track({ eventName: "obj_event", params: { a: 1 } })}>
 					Object Click
 				</button>
 			)
