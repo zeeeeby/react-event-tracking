@@ -91,9 +91,7 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 		}
 	}
 
-	const trackCached = useCallback(track, [parentCtx])
-
-	const value = useMemo(() => ({ track: trackCached }), [trackCached])
+	const value = useMemo(() => ({ track }), [parentCtx])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
@@ -140,9 +138,8 @@ export const TrackProvider = <T extends Record<string, any>>({
 			...incomingParams
 		})
 	}
-	const trackCached = useCallback(track, [ctx])
 
-	const value = useMemo(() => ({ track: trackCached }), [trackCached])
+	const value = useMemo(() => ({ track }), [ctx])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
