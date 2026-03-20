@@ -4,17 +4,24 @@ import { EventObject } from "./types";
 import { useTracker } from "./context";
 import { parseEventArgs } from "./utils";
 
+type EventProps = {
+    event: string
+    params?: EventObject["params"]
+} | {
+    event: EventObject
+}
+
 export const Track = {
-    OnMount: (props: EventObject & { children?: React.ReactNode }) => {
-        useMountEvent(props);
+    OnMount: (props: EventProps & { children?: React.ReactNode }) => {
+        useMountEvent(parseEventArgs(props.event));
         return props.children ?? null;
     },
     
     Impression: ({ 
         children, 
         options,
-        ...eventProps 
-    }: EventObject & { 
+        event: eventProps
+    }: EventProps & {
         children: React.ReactNode;
         options?: UseIntersectionObserverOptions;
     }) => {
@@ -53,14 +60,14 @@ export const Track = {
         );
     },
 
-    OnClick: (props: EventObject & { children: React.ReactNode | ((track: () => void) => React.ReactNode) }) => {
+    OnClick: (props: EventProps & ({ children: React.ReactNode } | { render: (track: () => void) => React.ReactNode })) => {
         const { sendEvent } = useTracker();
-        const { eventName, params } = parseEventArgs(props, undefined);
+        const { eventName, params } = parseEventArgs(props.event, undefined);
 
         const track = React.useCallback(() => sendEvent(eventName, params), [sendEvent, eventName, params]);
 
-        if (typeof props.children == "function")
-            return props.children(track);
+        if ("render" in props)
+            return props.render(track);
 
         return Children.map(props.children, child => {
             if (!isValidElement(child)) {

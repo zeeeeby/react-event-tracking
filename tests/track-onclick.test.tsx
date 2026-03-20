@@ -12,7 +12,7 @@ describe("Track.OnClick", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.OnClick eventName="button_click" params={{ id: "123" }}>
+				<Track.OnClick event="button_click" params={{ id: "123" }}>
 					<button 
                         data-testid="btn" 
                         onClickCapture={existingCapture}
@@ -42,19 +42,17 @@ describe("Track.OnClick", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.OnClick eventName="custom_click">
-					{(track) => (
-						<button
-							data-testid="btn2"
-							onClick={(e) => {
-								track()
-								existingClick()
-							}}
-						>
-							Custom Track Button
-						</button>
-					)}
-				</Track.OnClick>
+				<Track.OnClick event="custom_click" render={(track) => (
+					<button
+						data-testid="btn2"
+						onClick={(e) => {
+							track()
+							existingClick()
+						}}
+					>
+						Custom Track Button
+					</button>
+				)} />
 			</TrackRoot>
 		)
 
@@ -71,7 +69,7 @@ describe("Track.OnClick", () => {
 
 		const { container } = render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.OnClick eventName="text_click">
+				<Track.OnClick event="text_click">
 					Just some text
 				</Track.OnClick>
 			</TrackRoot>
@@ -85,7 +83,7 @@ describe("Track.OnClick", () => {
 
         render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.OnClick eventName="multi_click">
+				<Track.OnClick event="multi_click">
 					<div data-testid="multi1">One</div>
                     <div data-testid="multi2">Two</div>
 				</Track.OnClick>
