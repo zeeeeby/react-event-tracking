@@ -120,12 +120,20 @@ export const useTracking = createReactEventTrackingHook<AnalyticsEvents>();
 2. Use it in your components:
 ```tsx
 const LoginButton = () => {
+  // You can use the full tracker
   const { track } = useTracking();
+  
+  // Or narrow it down to a specific scope
+  const { track } = useTracking("login_screen");
 
   const handleLogin = () => {
-    // This call transforms into "login_screen.logged_in" event with parameters 
+    // Full path:
     track.login_screen.logged_in({ timePassed: 3000 });
+    
+    // Narrowed path (same result: "login_screen.logged_in"):
+    track.logged_in({ timePassed: 3000 });
   };
+  
   return (    
     <button onClick={handleLogin}>
       Login with Google
