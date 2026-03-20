@@ -21,7 +21,7 @@ const setupIntersectionObserverMock = () => {
 	return IntersectionObserverMock
 }
 
-describe("Track.Impression (deeply mocked, not very useful)", () => {
+describe("Track.OnImpression (deeply mocked, not very useful)", () => {
 	beforeEach(() => {
 		observers.length = 0
 		setupIntersectionObserverMock()
@@ -44,9 +44,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view">
+				<Track.OnImpression event="banner_view">
 					<div>Test Banner</div>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
@@ -64,9 +64,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view" params={params}>
+				<Track.OnImpression event="banner_view" params={params}>
 					<div>Test Banner</div>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
@@ -80,9 +80,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view">
+				<Track.OnImpression event="banner_view">
 					<div>Test Banner</div>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
@@ -98,9 +98,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view" options={{ freezeOnceVisible: false }}>
+				<Track.OnImpression event="banner_view" options={{ freezeOnceVisible: false }}>
 					<div>Test Banner</div>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
@@ -116,9 +116,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		const { container } = render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view">
+				<Track.OnImpression event="banner_view">
 					<span>Test Banner</span>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
@@ -135,9 +135,9 @@ describe("Track.Impression (deeply mocked, not very useful)", () => {
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<Track.Impression eventName="banner_view">
+				<Track.OnImpression event="banner_view">
 					<ComponentWithRef ref={innerRef}>Test Banner</ComponentWithRef>
-				</Track.Impression>
+				</Track.OnImpression>
 			</TrackRoot>
 		)
 
