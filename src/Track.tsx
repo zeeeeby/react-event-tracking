@@ -51,5 +51,30 @@ export const Track = {
         ) : (
             <div ref={ref}>{child}</div>
         );
+    },
+
+    OnClick: (props: EventObject & { children: React.ReactNode | ((track: () => void) => React.ReactNode) }) => {
+        const { sendEvent } = useTracker();
+        const { eventName, params } = parseEventArgs(props, undefined);
+
+        const track = React.useCallback(() => sendEvent(eventName, params), [sendEvent, eventName, params]);
+
+        if (typeof props.children == "function")
+            return props.children(track);
+
+        return Children.map(props.children, child => {
+            if (!isValidElement(child)) {
+                return child;
+            }
+            
+            return cloneElement(child as React.ReactElement, {
+                onClickCapture: (e: React.MouseEvent) => {
+                    track();
+                    if (child.props && typeof child.props.onClickCapture === 'function') {
+                        child.props.onClickCapture(e);
+                    }
+                }
+            });
+        });
     }
 };
