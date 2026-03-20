@@ -70,16 +70,14 @@ export const Track = {
             return props.render(track);
 
         return Children.map(props.children, child => {
-            if (!isValidElement(child)) {
+            if (!isValidElement(child))
                 return child;
-            }
             
             return cloneElement(child as React.ReactElement, {
                 onClickCapture: (e: React.MouseEvent) => {
                     track();
-                    if (child.props && typeof child.props.onClickCapture === 'function') {
+                    if (child.props && typeof child.props.onClickCapture === 'function')
                         child.props.onClickCapture(e);
-                    }
                 }
             });
         });
