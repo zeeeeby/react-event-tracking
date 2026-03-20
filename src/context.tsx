@@ -1,9 +1,15 @@
 import React, { useContext, useMemo, useRef, type PropsWithChildren } from "react"
-import { EventParams, EventFilter, EventTransformer, AnyFunction } from "./types"
+import {
+	EventParams,
+	EventFilter,
+	EventTransformer,
+	AnyFunction,
+	TrackContextValueLegacy,
+	EventObject
+} from "./types"
+import { parseEventArgs } from "./utils"
 
-const TrackContext = React.createContext<{
-	track: (eventName: string, params?: EventParams) => void
-} | null>(null)
+const TrackContext = React.createContext<TrackContextValueLegacy | null>(null)
 
 export const useReactEventTracking = () => {
 	const ctx = useContext(TrackContext)
@@ -38,7 +44,14 @@ const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> =
 	const transformRef = useFreshRef(transform)
 	const customHandlersRef = useFreshRef(customHandlers)
 
-	function track(eventName: string, incomingParams?: EventParams) {
+	function track(eventName: string, params?: EventParams): void
+	function track(event: EventObject): void
+	function track(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
+		const { eventName, params: incomingParams } = parseEventArgs(
+			eventNameOrObject,
+			eventParams
+		)
+
 		let localName = eventName
 		let localParams = incomingParams || EmptyParams
 
@@ -149,7 +162,14 @@ export const TrackProvider = <T extends Record<string, any>>({
 
 	const paramsRef = useFreshRef(params)
 
-	function track(eventName: string, incomingParams?: EventParams) {
+	function track(eventName: string, params?: EventParams): void
+	function track(event: EventObject): void
+	function track(eventNameOrObject: string | EventObject, eventParams?: EventParams) {
+		const { eventName, params: incomingParams } = parseEventArgs(
+			eventNameOrObject,
+			eventParams
+		)
+
 		const currentParams = paramsRef.current
 
 		ctx.track(eventName, {

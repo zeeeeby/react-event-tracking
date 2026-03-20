@@ -14,6 +14,10 @@ export type FlatTracker<T> = {
 	: FlatTracker<T[K]>;
 };
 
+export interface TrackContextValueLegacy {
+	track(eventName: string, params?: EventParams): void
+	track(event: EventObject): void
+}
 
 export type EventObject<E extends string = string, P = EventParams> = { eventName: E; params?: P }
 
