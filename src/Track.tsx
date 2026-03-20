@@ -17,7 +17,7 @@ export const Track = {
         return props.children ?? null;
     },
     
-    Impression: ({ 
+    OnImpression: ({ 
         children, 
         options,
         event: eventProps
