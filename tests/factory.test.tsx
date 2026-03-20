@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { TrackRoot, useReactEventTracking } from "../src"
+import { TrackRoot, useReactEventTracking, TrackProvider } from "../src"
 
 const TestButton = ({ eventName, params }: { eventName: string; params?: any }) => {
 	const { track } = useReactEventTracking()
@@ -157,5 +157,67 @@ describe("TrackRoot.factory", () => {
 		await userEvent.click(buttons[1])
 		expect(onLocal).toHaveBeenCalledWith("local.click", {})
 		expect(onGlobal).not.toHaveBeenCalled()
+	})
+
+	it("should support customHandlers and propagate them through TrackProvider", async () => {
+		const setUserId = vi.fn()
+		const onEvent = vi.fn()
+
+		const CustomButton = () => {
+			const { setUserId: setUserIdFromHook, track } = useReactEventTracking() as any
+			return (
+				<button
+					onClick={() => {
+						setUserIdFromHook("user_123")
+						track("test")
+					}}
+				>
+					Set User
+				</button>
+			)
+		}
+
+		render(
+			<TrackRoot onEvent={onEvent} customHandlers={{ setUserId }}>
+				<TrackProvider params={{ section: "auth" }}>
+					<CustomButton />
+				</TrackProvider>
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Set User"))
+
+		expect(setUserId).toHaveBeenCalledWith("user_123")
+		expect(onEvent).toHaveBeenCalledWith("test", { section: "auth" })
+	})
+
+	it("should update customHandlers when they change on re-render", async () => {
+		const handler1 = vi.fn()
+		const handler2 = vi.fn()
+		const onEvent = vi.fn()
+
+		const CustomButton = () => {
+			const { myHandler } = useReactEventTracking() as any
+			return <button onClick={() => myHandler()}>Click</button>
+		}
+
+		const { rerender } = render(
+			<TrackRoot onEvent={onEvent} customHandlers={{ myHandler: handler1 }}>
+				<CustomButton />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click"))
+		expect(handler1).toHaveBeenCalledTimes(1)
+
+		rerender(
+			<TrackRoot onEvent={onEvent} customHandlers={{ myHandler: handler2 }}>
+				<CustomButton />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Click"))
+		expect(handler2).toHaveBeenCalledTimes(1)
+		expect(handler1).toHaveBeenCalledTimes(1)
 	})
 })

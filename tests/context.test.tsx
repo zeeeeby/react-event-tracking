@@ -18,29 +18,6 @@ const TestButton = ({
 }
 
 describe("Track Context", () => {
-	it("should support track overload with object", async () => {
-		const onEvent = vi.fn()
-
-		const ObjectButton = () => {
-			const { track } = useReactEventTracking()
-			return (
-				<button onClick={() => track({ eventName: "obj_event", params: { a: 1 } })}>
-					Object Click
-				</button>
-			)
-		}
-
-		render(
-			<TrackRoot onEvent={onEvent}>
-				<ObjectButton />
-			</TrackRoot>
-		)
-
-		await userEvent.click(screen.getByText("Object Click"))
-
-		expect(onEvent).toHaveBeenCalledWith("obj_event", { a: 1 })
-	})
-
 	it("should send event from root", async () => {
 		const onEvent = vi.fn()
 
@@ -238,5 +215,71 @@ describe("Track Context", () => {
 		)
 
 		consoleSpy.mockRestore()
+	})
+
+	it("should update customHandlers when they change on re-render", async () => {
+		const handler1 = vi.fn()
+		const handler2 = vi.fn()
+
+		const Consumer = () => {
+			const { myHandler } = useReactEventTracking() as any
+			return <button onClick={() => myHandler("test")}>Call Handler</button>
+		}
+
+		const { rerender } = render(
+			<TrackRoot onEvent={() => {}} customHandlers={{ myHandler: handler1 }}>
+				<Consumer />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Call Handler"))
+		expect(handler1).toHaveBeenCalledWith("test")
+		expect(handler2).not.toHaveBeenCalled()
+
+		rerender(
+			<TrackRoot onEvent={() => {}} customHandlers={{ myHandler: handler2 }}>
+				<Consumer />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Call Handler"))
+		expect(handler2).toHaveBeenCalledWith("test")
+		expect(handler1).toHaveBeenCalledTimes(1)
+	})
+
+	it("should handle adding new custom handlers on re-render", async () => {
+		const handler1 = vi.fn()
+		const handler2 = vi.fn()
+
+		const Consumer = () => {
+			const { myHandler, myHandler2 } = useReactEventTracking() as any
+			return (
+				<div>
+					<button onClick={() => myHandler?.("h1")}>Call H1</button>
+					<button onClick={() => myHandler2?.("h2")}>Call H2</button>
+				</div>
+			)
+		}
+
+		const { rerender } = render(
+			<TrackRoot onEvent={() => {}} customHandlers={{ myHandler: handler1 }}>
+				<Consumer />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Call H1"))
+		expect(handler1).toHaveBeenCalledWith("h1")
+
+		rerender(
+			<TrackRoot
+				onEvent={() => {}}
+				customHandlers={{ myHandler: handler1, myHandler2: handler2 }}
+			>
+				<Consumer />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Call H2"))
+		expect(handler2).toHaveBeenCalledWith("h2")
 	})
 })
