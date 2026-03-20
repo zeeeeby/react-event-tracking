@@ -3,6 +3,7 @@ A convenient React context for tracking analytics events.
 
 ## Features
 
+- **Elegant Type-Safe Api**: enjoy a seamless dot-notation experience with full TypeScript autocompletion.
 - **Nested Contexts**: Automatically merges parameters from parent providers.
 - **Zero Re-renders**: No need to wrap props in `useCallback`/`useMemo`.
 - **Multiple Providers**: Send events to different analytics services.
@@ -15,6 +16,10 @@ A convenient React context for tracking analytics events.
 
 - [Installation](#installation)
 - [Quickstart](#quickstart)
+- [Usage Guide](#usage-guide)
+  * [Basic Hook](#basic-hook)
+  * [Typed Hook Factory](#typed-hook-factory)
+  * [Custom Handlers](#custom-handlers)
 - [Advanced Usage](#advanced-usage)
   * [Multiple Trackers & Factory](#multiple-trackers--factory)
   * [Filtering Events](#filtering-events)
@@ -47,6 +52,7 @@ const Main = () => (
   </TrackRoot>
 );
 ``` 
+
 2. Wrap any component with shared parameters
 ```tsx
 import { TrackProvider } from 'react-event-tracking';
@@ -58,7 +64,12 @@ const Dashboard = () => (
 );
 ```
 
-3. Send events conveniently. On button click, parameters will be merged.
+## Usage Guide
+
+### Basic Hook
+
+Use `useReactEventTracking` for simple event tracking  
+
 ```tsx
 import { useReactEventTracking } from 'react-event-tracking';
 
@@ -66,19 +77,114 @@ const MyButton = () => {
   const { track } = useReactEventTracking();
 
   return (
-    <>
-    // event sent with parameters: { screen: 'dashboard', button_id: '123' }
+    {/* Option A: String } */}
     <button onClick={() => track('click', { button_id: '123' })}>
       Click me
     </button>
 
-    {/* Option B: Object call */}                                                                                                           
-    <button onClick={() => track({ eventName: 'click', params: { button_id: '456' } })}>                                                
-      Click me too                                                                                                                          
-    </button>  
-    </>
+    {/* Option B: Object call */} 
+    <button onClick={() => track({ eventName: 'click', params: { button_id: '456' } })}>
+      Click me
+    </button>
+
   );
 };
+```
+
+### Typed Hook Factory
+
+For a more convenient dot-notation syntax and full TypeScript support, create your own hook using `createReactEventTrackingHook`.
+
+1. Create a hook:
+```tsx
+import { createReactEventTrackingHook } from 'react-event-tracking';
+
+// LoadingScreen.tsx
+export type LoginScreenEvents = {
+	forgot_password: { from: "footer" | "button" }
+	logged_in: { timePassed: number }
+}
+
+type SystemEvents = {
+	app_updated: { previous_version: string; current_version: string }
+}
+
+// analytics.ts
+export type AnalyticsEvents = SystemEvents & {
+	login_screen: LoginScreenEvents
+}
+
+export const useTracking = createReactEventTrackingHook<AnalyticsEvents>();
+```
+
+2. Use it in your components:
+```tsx
+const LoginButton = () => {
+  const { track } = useTracking();
+
+  const handleLogin = () => {
+    // This call transforms into "login_screen.logged_in" event with parameters 
+    track.login_screen.logged_in({ timePassed: 3000 });
+  };
+  return (    
+    <button onClick={handleLogin}>
+      Login with Google
+    </button>
+  );
+};
+```
+
+### Custom Handlers
+
+Sometimes you need to expose more than just the `track` function, for example, a way to identify users. You can pass custom handlers to the factory.
+
+1. Define your handlers type and create the hook:
+```tsx
+type MyCustomHandlers = {
+  setUserId: (id: string) => void;
+}
+
+export const useTracking = createReactEventTrackingHook<AnalyticsEvents, MyCustomHandlers>();
+```
+
+2. Create a custom Root using [TrackRoot.factory](#multiple-trackers--factory):
+```tsx
+import { TrackRoot } from 'react-event-tracking';
+
+const CustomTrackRoot = TrackRoot.factory<MyCustomHandlers>({
+  onEvent: (name, params) => {
+    amplitude.logEvent(name, params);
+  },
+  customHandlers: {
+    setUserId: (id) => {
+      amplitude.setUserId(id);
+    }
+  }
+});
+
+const App = () => (
+  <CustomTrackRoot>
+    <Main />
+  </CustomTrackRoot>
+);
+```
+
+3. Use it in your components:
+```tsx
+const Profile = () => {
+  const { track, setUserId } = useTracking();
+
+const handleLogin = () => {
+    track.login_screen.logged_in({ timePassed: 3000 });
+    setUserId('user_123')
+  };
+
+  return (
+    <button onClick={handleLogin}>
+      Login
+    </button>
+  );
+}
 ```
 
 ## Advanced Usage
@@ -91,13 +197,13 @@ Use `TrackRoot.factory` to create reusable tracker components:
 
 1. Create specific trackers
 ```tsx
-const TrackRootGoogle = TrackRoot.factory(
-  (name, params) => gtag('event', name, params)
-);
+const TrackRootGoogle = TrackRoot.factory({
+  onEvent: (name, params) => gtag('event', name, params)
+});
 
-const TrackRootAmplitude = TrackRoot.factory(
-  (name, params) => amplitude.logEvent(name, params)
-);
+const TrackRootAmplitude = TrackRoot.factory({
+  onEvent: (name, params) => amplitude.logEvent(name, params)
+});
 ```
 
 2. Compose them in your app
@@ -113,19 +219,19 @@ const App = () => (
 
 ### Filtering Events
 
-You can control which events are sent to which provider using the `filter` prop (or the second argument in `factory`). If the filter returns `false`, the event is skipped for that tracker but continues to bubble up to others.
+You can control which events are sent to which provider using the `filter` prop in `factory`. If the filter returns `false`, the event is skipped for that tracker but continues to bubble up to others.
 
 ```tsx
 // Google Analytics: only track page_* events
-const TrackRootGoogle = TrackRoot.factory(
-  (name, params) => gtag('event', name, params),
-  (name) => name.startsWith('page_')
-);
+const TrackRootGoogle = TrackRoot.factory({
+  onEvent: (name, params) => gtag('event', name, params),
+  filter: (name) => name.startsWith('page_')
+});
 
-// Amplitude: track everything (filter is optional, defaults to allowing all events)
-const TrackRootAmplitude = TrackRoot.factory(
-  (name, params) => ampltitude.logEvent(name, params),
-);
+// Amplitude: track everything
+const TrackRootAmplitude = TrackRoot.factory({
+  onEvent: (name, params) => amplitude.logEvent(name, params),
+});
 ```
 
 Compose them in your app:
@@ -142,16 +248,15 @@ const App = () => (
 
 ### Transforming Events
 
-You can modify the event name or parameters before they reach the handler using the `transform` prop (or the third argument in `factory`).
+You can modify the event name or parameters before they are sent to the handler using the `transform` prop in `factory`.
 
 Note: Transformations apply locally and do not affect the event bubbling up to parent providers.
 
 ```tsx
 // GDPR Tracker
-const AmpltitudeUS = TrackRoot.factory(
-  (name, params) => amplitude.logEvent(name, params),
-  undefined, // no filter
-  (name, params) => {
+const AmplitudeUS = TrackRoot.factory({
+  onEvent: (name, params) => amplitude.logEvent(name, params),
+  transform: (name, params) => {
     if (params?.userRegion === 'EU') {
       // Remove PII (Personally Identifiable Information)
       const { userId, email, ...safeParams } = params;
@@ -162,7 +267,7 @@ const AmpltitudeUS = TrackRoot.factory(
     }
     return { eventName: name, params };
   }
-);
+});
 ```
 
 ### TypeScript Generics Support

@@ -1,20 +1,15 @@
-import React, {
-	useCallback,
-	useContext,
-	useMemo,
-	useRef,
-	type PropsWithChildren
-} from "react"
+import React, { useContext, useMemo, useRef, type PropsWithChildren } from "react"
 import {
 	EventParams,
-	TrackContextValue,
 	EventFilter,
 	EventTransformer,
+	AnyFunction,
+	TrackContextValueLegacy,
 	EventObject
 } from "./types"
 import { parseEventArgs } from "./utils"
 
-const TrackContext = React.createContext<TrackContextValue | null>(null)
+const TrackContext = React.createContext<TrackContextValueLegacy | null>(null)
 
 export const useReactEventTracking = () => {
 	const ctx = useContext(TrackContext)
@@ -25,20 +20,29 @@ export const useReactEventTracking = () => {
 	return ctx
 }
 
-type TrackRootProps = PropsWithChildren<{
-	onEvent: (eventName: string, params: EventParams) => void
-	filter?: EventFilter
-	transform?: EventTransformer
-}>
+type TrackRootProps<CustomHandlers extends Record<string, AnyFunction>> =
+	PropsWithChildren<{
+		onEvent: (eventName: string, params: EventParams) => void
+		filter?: EventFilter
+		transform?: EventTransformer
+		customHandlers?: CustomHandlers
+	}>
 
 const EmptyParams = {} as EventParams
 
-const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootProps) => {
+const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> = {}>({
+	onEvent,
+	children,
+	filter,
+	transform,
+	customHandlers
+}: TrackRootProps<CustomHandlers>) => {
 	const parentCtx = useContext(TrackContext)
 
 	const onEventRef = useFreshRef(onEvent)
 	const filterRef = useFreshRef(filter)
 	const transformRef = useFreshRef(transform)
+	const customHandlersRef = useFreshRef(customHandlers)
 
 	function track(eventName: string, params?: EventParams): void
 	function track(event: EventObject): void
@@ -91,21 +95,56 @@ const TrackRootComponent = ({ onEvent, children, filter, transform }: TrackRootP
 		}
 	}
 
-	const value = useMemo(() => ({ track }), [parentCtx])
+	const value = useMemo(() => {
+		return new Proxy({} as Record<string, any>, {
+			get(_, prop: string) {
+				if (prop === track.name) return track
 
-	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
+				const handler = customHandlersRef.current?.[prop]
+				if (typeof handler === "function") {
+					return (...args: any[]) => handler(...args)
+				}
+
+				return undefined
+			},
+			has(_, prop: string) {
+				return (
+					prop === track.name ||
+					(customHandlersRef.current
+						? prop in customHandlersRef.current
+						: false)
+				)
+			},
+			ownKeys() {
+				const customKeys = customHandlersRef.current
+					? Object.keys(customHandlersRef.current)
+					: []
+				return Array.from(new Set([track.name, ...customKeys]))
+			},
+			getOwnPropertyDescriptor(_, prop) {
+				return {
+					enumerable: true,
+					configurable: true
+				}
+			}
+		})
+	}, [parentCtx])
+
+	return <TrackContext.Provider value={value as any}>{children}</TrackContext.Provider>
 }
 
-const factory = (args: {
-	onEvent: (eventName: string, params?: EventParams) => void
-	filter?: EventFilter
-	transform?: EventTransformer
-}) => {
-	return (props: Omit<TrackRootProps, "onEvent" | "filter" | "transform">) => (
+const factory = <T extends Record<string, AnyFunction> = {}>(args: TrackRootProps<T>) => {
+	return (
+		props: Omit<
+			TrackRootProps<T>,
+			"onEvent" | "filter" | "transform" | "customHandlers"
+		>
+	) => (
 		<TrackRootComponent
 			onEvent={args.onEvent}
 			filter={args.filter}
 			transform={args.transform}
+			customHandlers={args.customHandlers}
 			{...props}
 		/>
 	)
@@ -139,7 +178,7 @@ export const TrackProvider = <T extends Record<string, any>>({
 		})
 	}
 
-	const value = useMemo(() => ({ track }), [ctx])
+	const value = useMemo(() => ({ ...ctx, track }), [ctx])
 
 	return <TrackContext.Provider value={value}>{children}</TrackContext.Provider>
 }
