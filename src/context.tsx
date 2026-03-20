@@ -25,7 +25,7 @@ type TrackRootProps<CustomHandlers extends Record<string, AnyFunction>> =
 		onEvent: (eventName: string, params: EventParams) => void
 		filter?: EventFilter
 		transform?: EventTransformer
-		customHandlers?: CustomHandlers & { track?: never }
+		customHandlers?: CustomHandlers
 	}>
 
 const EmptyParams = {} as EventParams
