@@ -5,10 +5,9 @@ export function createTracker<T extends EventsMap>(path: string[] = [], track: (
         get(_, prop: string) {
             return createTracker([...path, prop], track);
         },
-        apply(_, __, [name, params]) {
-            let eventParams = typeof name === 'object' ? name : params
-            const eventName = typeof name === 'object' ? path.join('.') : name;
-            track(eventName, eventParams);
+        apply(_, __, [params]) {
+            const eventName = path.join('.')
+            track(eventName, params);
         }
     }) as unknown as FlatTracker<T>;
 }       

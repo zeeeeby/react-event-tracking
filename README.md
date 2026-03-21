@@ -133,9 +133,6 @@ const LoginButton = () => {
     
     // Narrowed path: the same result: "login_screen.logged_in":
     track2.logged_in({ timePassed: 3000 });
-
-    // Explicit event name: first argument overrides the event name. Result is "Logged In"
-    track.login_screen.logged_in("Logged In", { timePassed: 3000 })
   };
   
   return (    

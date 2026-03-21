@@ -18,6 +18,7 @@ export type AnalyticsEvents = {
 	login_screen: LoginScreenEvents
 	system: SystemEvents
 	no_prefix_event: { test: string; date: Date }
+	"Logged In": { timePassed: number }
 }
 type MyCustomHandlers = {
 	setUserId: (id: string) => void
@@ -149,37 +150,34 @@ describe("createReactEventTrackingHook", () => {
 		})
 	})
 
-	it("should support function overload", async () => {
+	it("should track events with spaces in name", async () => {
 		const onEvent = vi.fn()
-		const useSimpleTracking = createReactEventTrackingHook<AnalyticsEvents>()
 
-		const OverloadComponent = () => {
-			const { track } = useSimpleTracking("system")
-			
+		const SimpleComponent = () => {
+			const { track } = useTracking()
 			return (
 				<button
+					data-testid="space-event"
 					onClick={() =>
-						track.app_updated("App Updated", {
-							current_version: "3.0.0",
-							previous_version: "2.0.0"
+						track["Logged In"]({
+							timePassed: 123
 						})
 					}
 				>
-					Overload
+					Buy
 				</button>
 			)
 		}
 
 		render(
 			<TrackRoot onEvent={onEvent}>
-				<OverloadComponent />
+				<SimpleComponent />
 			</TrackRoot>
 		)
 
-		await userEvent.click(screen.getByText("Overload"))
-		expect(onEvent).toHaveBeenCalledWith("App Updated", {
-			previous_version: "2.0.0",
-			current_version: "3.0.0"
+		await userEvent.click(screen.getByTestId("space-event"))
+		expect(onEvent).toHaveBeenCalledWith("Logged In", {
+			timePassed: 123
 		})
 	})
 })
