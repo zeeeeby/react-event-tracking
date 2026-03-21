@@ -124,17 +124,17 @@ const LoginButton = () => {
   const { track } = useTracking();
   
   // Or narrow it down to a specific scope
-  const { track } = useTracking("login_screen");
+  const { track: track2 } = useTracking("login_screen");
 
   const handleLogin = () => {
     // Full path: eventName is automatically derived from the call chain (result: "login_screen.logged_in")      
     track.login_screen.logged_in({ timePassed: 3000 });
     
     // Narrowed path: the same result: "login_screen.logged_in":
-    track.logged_in({ timePassed: 3000 });
+    track2.logged_in({ timePassed: 3000 });
 
     // Explicit event name: first argument overrides the event name. Result is "Logged In"
-    track.logged_in("Logged In", { timePassed: 3000 })
+    track.login_screen.logged_in("Logged In", { timePassed: 3000 })
   };
   
   return (    
