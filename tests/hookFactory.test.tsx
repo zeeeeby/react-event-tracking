@@ -148,4 +148,38 @@ describe("createReactEventTrackingHook", () => {
 			current_version: "2.0.0"
 		})
 	})
+
+	it("should support function overload", async () => {
+		const onEvent = vi.fn()
+		const useSimpleTracking = createReactEventTrackingHook<AnalyticsEvents>()
+
+		const OverloadComponent = () => {
+			const { track } = useSimpleTracking("system")
+			
+			return (
+				<button
+					onClick={() =>
+						track.app_updated("App Updated", {
+							current_version: "3.0.0",
+							previous_version: "2.0.0"
+						})
+					}
+				>
+					Overload
+				</button>
+			)
+		}
+
+		render(
+			<TrackRoot onEvent={onEvent}>
+				<OverloadComponent />
+			</TrackRoot>
+		)
+
+		await userEvent.click(screen.getByText("Overload"))
+		expect(onEvent).toHaveBeenCalledWith("App Updated", {
+			previous_version: "2.0.0",
+			current_version: "3.0.0"
+		})
+	})
 })

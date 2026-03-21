@@ -10,7 +10,7 @@ type IsLeaf<T> = T extends Record<string, any>
 
 export type FlatTracker<T> = {
 	[K in keyof T]: IsLeaf<T[K]> extends true
-	? (params: T[K]) => void
+	? ((params: T[K]) => void) & ((eventName: string, params: T[K]) => void)
 	: FlatTracker<T[K]>;
 };
 
