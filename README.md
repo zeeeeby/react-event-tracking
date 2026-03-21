@@ -111,6 +111,7 @@ type SystemEvents = {
 
 // analytics.ts
 export type AnalyticsEvents = SystemEvents & {
+  // supports deeply nested event maps
 	login_screen: LoginScreenEvents
 }
 
