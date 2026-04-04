@@ -98,7 +98,7 @@ const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> =
 	const value = useMemo(() => {
 		return new Proxy({} as Record<string, any>, {
 			get(_, prop: string) {
-				if (prop === track.name) return track
+				if (prop === "track") return track
 
 				const handler = customHandlersRef.current?.[prop]
 				if (typeof handler === "function") {
@@ -109,7 +109,7 @@ const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> =
 			},
 			has(_, prop: string) {
 				return (
-					prop === track.name ||
+					prop === "track" ||
 					(customHandlersRef.current
 						? prop in customHandlersRef.current
 						: false)
@@ -119,7 +119,7 @@ const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> =
 				const customKeys = customHandlersRef.current
 					? Object.keys(customHandlersRef.current)
 					: []
-				return Array.from(new Set([track.name, ...customKeys]))
+				return Array.from(new Set(["track", ...customKeys]))
 			},
 			getOwnPropertyDescriptor(_, prop) {
 				return {
@@ -132,22 +132,13 @@ const TrackRootComponent = <CustomHandlers extends Record<string, AnyFunction> =
 
 	return <TrackContext.Provider value={value as any}>{children}</TrackContext.Provider>
 }
-
 const factory = <T extends Record<string, AnyFunction> = {}>(args: TrackRootProps<T>) => {
 	return (
 		props: Omit<
 			TrackRootProps<T>,
 			"onEvent" | "filter" | "transform" | "customHandlers"
 		>
-	) => (
-		<TrackRootComponent
-			onEvent={args.onEvent}
-			filter={args.filter}
-			transform={args.transform}
-			customHandlers={args.customHandlers}
-			{...props}
-		/>
-	)
+	) => <TrackRootComponent {...args} {...props} />
 }
 
 export const TrackRoot = Object.assign(TrackRootComponent, { factory })
