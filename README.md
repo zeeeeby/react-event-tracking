@@ -20,6 +20,7 @@ A convenient React context for tracking analytics events.
   * [Basic Hook](#basic-hook)
   * [Typed Hook Factory](#typed-hook-factory)
   * [Custom Handlers](#custom-handlers)
+  * [Standalone Tracking Function](#standalone-tracking-function)
 - [Advanced Usage](#advanced-usage)
   * [Multiple Trackers & Factory](#multiple-trackers--factory)
   * [Filtering Events](#filtering-events)
@@ -194,6 +195,25 @@ const handleLogin = () => {
     </button>
   );
 }
+```
+
+### Standalone Tracking Function
+
+If you need to use the typed tracking API outside of React components, you can use `createEventTrackingStandalone`. It provides the same dot-notation and type safety as the hook factory.
+
+```ts
+import { createEventTrackingStandalone } from 'react-event-tracking';
+import { AnalyticsEvents } from './analytics'; // Your events map
+
+// Provide your base tracking implementation
+const baseTrack = (eventName: string, params?: Record<string, any>) => {
+  amplitude.logEvent(eventName, params);
+};
+
+export const trackEvent = createEventTrackingStandalone<AnalyticsEvents>(baseTrack);
+
+// Use it anywhere
+trackEvent.login_screen.logged_in({ timePassed: 3000 });
 ```
 
 ## Advanced Usage
