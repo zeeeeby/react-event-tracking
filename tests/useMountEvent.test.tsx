@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest"
 import { render } from "@testing-library/react"
 import { TrackRoot } from "../src/context"
 import { useMountEvent } from "../src/hooks/useMountEvent"
+import { Track } from "../src/Track"
 
 const TestComponent = ({
 	eventName,
@@ -114,6 +115,21 @@ describe("useMountEvent", () => {
 					<TestComponent eventName="page_view" params={{ screen: "home" }} />
 				</TrackRoot>
 			</StrictMode>
+		)
+
+		expect(onEvent).toHaveBeenCalledTimes(1)
+		expect(onEvent).toHaveBeenCalledWith("page_view", { screen: "home" })
+	})
+
+	it("should send event on mount using Track.OnMount component", () => {
+		const onEvent = vi.fn()
+
+		render(
+			<TrackRoot onEvent={onEvent}>
+				<Track.OnMount event="page_view" params={{ screen: "home" }}>
+					<div>Child Component</div>
+				</Track.OnMount>
+			</TrackRoot>
 		)
 
 		expect(onEvent).toHaveBeenCalledTimes(1)
