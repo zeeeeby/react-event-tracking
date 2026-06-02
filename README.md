@@ -21,6 +21,7 @@ A convenient React context for tracking analytics events.
   * [Typed Hook Factory](#typed-hook-factory)
   * [Custom Handlers](#custom-handlers)
   * [Standalone Tracking Function](#standalone-tracking-function)
+  * [Typed Event Factory](#typed-event-factory)
 - [Advanced Usage](#advanced-usage)
   * [Multiple Trackers & Factory](#multiple-trackers--factory)
   * [Filtering Events](#filtering-events)
@@ -214,6 +215,23 @@ export const trackEvent = createEventTrackingStandalone<AnalyticsEvents>(baseTra
 
 // Use it anywhere
 trackEvent.login_screen.logged_in({ timePassed: 3000 });
+```
+
+### Typed Event Factory
+Best for untyped methods
+```ts
+import { createEventFactory, useMountEvent } from 'react-event-tracking';
+import { AnalyticsEvents } from './analytics'; // Your events map
+
+export const eventFactory = createEventFactory<AnalyticsEvents>();
+
+// page.tsx
+export function LoginPage() {
+  // Creates { eventName: 'login_screen.show', params: {} }        
+  useMountEvent(eventFactory.login_screen.show({}))
+
+  return ...
+}
 ```
 
 ## Advanced Usage

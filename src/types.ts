@@ -14,6 +14,12 @@ export type FlatTracker<T> = {
 	: FlatTracker<T[K]>;
 };
 
+export type EventFactory<T> = {
+	[K in keyof T]: IsLeaf<T[K]> extends true
+	? (params: T[K]) => { eventName: string; params: T[K] }
+	: EventFactory<T[K]>;
+};
+
 export interface TrackContextValueLegacy {
 	track(eventName: string, params?: EventParams): void
 	track(event: EventObject): void
