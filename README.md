@@ -71,30 +71,6 @@ const Dashboard = () => (
 
 ## Usage Guide
 
-### Basic Hook
-
-Use `useReactEventTracking` for simple event tracking  
-
-```tsx
-import { useReactEventTracking } from 'react-event-tracking';
-
-const MyButton = () => {
-  const { track } = useReactEventTracking();
-
-  return (
-    {/* Option A: String } */}
-    <button onClick={() => track('click', { button_id: '123' })}>
-      Click me
-    </button>
-
-    {/* Option B: Object call */} 
-    <button onClick={() => track({ eventName: 'click', params: { button_id: '456' } })}>
-      Click me
-    </button>
-
-  );
-};
-```
 
 ### Typed Hook Factory
 
@@ -147,6 +123,31 @@ const LoginButton = () => {
     <button onClick={handleLogin}>
       Login with Google
     </button>
+  );
+};
+```
+
+### Legacy Hook
+
+Use `useReactEventTracking` for simple event tracking without typescript types 
+
+```tsx
+import { useReactEventTracking } from 'react-event-tracking';
+
+const MyButton = () => {
+  const { track } = useReactEventTracking();
+
+  return (
+    {/* Option A: String } */}
+    <button onClick={() => track('click', { button_id: '123' })}>
+      Click me
+    </button>
+
+    {/* Option B: Object call */} 
+    <button onClick={() => track({ eventName: 'click', params: { button_id: '456' } })}>
+      Click me
+    </button>
+
   );
 };
 ```
