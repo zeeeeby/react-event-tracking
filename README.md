@@ -100,12 +100,12 @@ const MyButton = () => {
 
 For a more convenient dot-notation syntax and full TypeScript support, create your own hook using `createReactEventTrackingHook`.
 
-1. Create a hook:
+1. Set up your events and create a hook:
 ```tsx
-import { createReactEventTrackingHook } from 'react-event-tracking';
+import { createReactEventTrackingHook, createEventFactory } from 'react-event-tracking';
 
-// LoadingScreen.tsx
-export type LoginScreenEvents = {
+
+type LoginScreenEvents = {
 	forgot_password: { from: "footer" | "button" }
 	logged_in: { timePassed: number }
 }
@@ -121,7 +121,10 @@ export type AnalyticsEvents = SystemEvents & {
 }
 
 export const useTracking = createReactEventTrackingHook<AnalyticsEvents>();
+
+export const eventFactory = createEventFactory<AnalyticsEvents>();
 ```
+More about [createEventFactory](#typed-event-factory)
 
 2. Use it in your components:
 ```tsx
