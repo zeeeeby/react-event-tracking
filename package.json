@@ -12,6 +12,15 @@
       "require": "./dist/index.cjs"
     }
   },
+  "keywords": [
+    "react",
+    "analytics",
+    "tracking",
+    "event-tracking",
+    "typescript",
+    "ts",
+    "type-safe"
+  ],
   "scripts": {
     "build": "tsc --noEmit && unbuild && yarn toc",
     "test": "vitest",
